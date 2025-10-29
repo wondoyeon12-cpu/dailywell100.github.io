@@ -74,14 +74,6 @@ function displayPostDetail(post) {
             </div>
         </div>
         
-        ${post.featured_image ? `
-            <div class="post-image mb-4">
-                <img src="${post.featured_image}" 
-                     alt="${post.title}" 
-                     class="img-fluid rounded"
-                     style="width: 100%; height: 400px; object-fit: cover;">
-            </div>
-        ` : ''}
         
         <div class="post-content">
             ${post.content}
