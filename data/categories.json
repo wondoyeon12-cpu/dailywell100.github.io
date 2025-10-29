@@ -23,4 +23,13 @@
     "icon": "fa-robot",
     "count": 0
   }
+  ,
+  {
+    "id": 4,
+    "name": "대한민국은, 지금",
+    "slug": "korea-now",
+    "description": "정책브리핑 정책뉴스로 지금 대한민국의 정책 소식을 전합니다",
+    "icon": "fa-flag",
+    "count": 0
+  }
 ]
