@@ -163,7 +163,7 @@ function displayRelatedPosts(posts) {
 // 카테고리 로드
 async function loadCategories() {
     try {
-        const response = await fetch('data/categories.json');
+        const response = await fetch('data/categories.json?v=' + Date.now());
         const categories = await response.json();
         
         const categoryList = document.getElementById('categoryList');

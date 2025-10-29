@@ -18,7 +18,7 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 
 function loadCategoriesSidebar() {
-    fetch('data/categories.json')
+    fetch('data/categories.json?v=' + Date.now())
         .then(resp => resp.json())
         .then(categories => {
             const categoryList = document.getElementById('categoryList');

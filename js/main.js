@@ -14,6 +14,8 @@ document.addEventListener('DOMContentLoaded', async function() {
         displayMainPage();
     } else if (currentPage === 'health.html') {
         displayCategoryPage('건강상식');
+    } else if (currentPage === 'korea-now.html') {
+        // 별도의 페이지 스크립트가 로드되므로 여기서는 아무 것도 하지 않음
     } else if (currentPage === 'fortune.html') {
         displayCategoryPage('오늘의 운세');
     } else if (currentPage.startsWith('post-')) {
@@ -32,7 +34,7 @@ async function loadData() {
         console.log('📦 게시글 데이터 로드 완료:', allPosts.length, '개');
         
         // 카테고리 데이터 로드
-        const categoriesResponse = await fetch('data/categories.json');
+        const categoriesResponse = await fetch('data/categories.json?v=' + Date.now());
         allCategories = await categoriesResponse.json();
         
         console.log(`✅ ${allPosts.length}개 게시글 로드 완료`);
