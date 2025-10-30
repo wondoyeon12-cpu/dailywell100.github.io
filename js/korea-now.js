@@ -1,6 +1,10 @@
 // 대한민국은, 지금 - 정책브리핑 정책뉴스 연동
 
+console.log('korea-now.js loaded');
+
 document.addEventListener('DOMContentLoaded', function() {
+    console.log('korea-now.js DOMContentLoaded fired');
+    
     // 카테고리 사이드바는 main.js에서 렌더링
     loadCategoriesSidebar();
 
@@ -14,7 +18,8 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-    fetchPolicyNews(1, 12, '');
+    // 기본은 정적 JSON을 우선 사용 (CORS 이슈 회피)
+    loadStaticNewsJson();
 });
 
 function loadCategoriesSidebar() {
@@ -40,10 +45,10 @@ function loadCategoriesSidebar() {
         .catch(() => {});
 }
 
-// 정책브리핑 정책뉴스 API 호출 및 표시
-async function fetchPolicyNews(pageNo = 1, numOfRows = 12, query = '') {
+async function loadStaticNewsJson() {
     const container = document.getElementById('newsContainer');
-    const pagination = document.getElementById('newsPagination');
+    console.log('loadStaticNewsJson called, container:', container);
+    
     if (container) {
         container.innerHTML = `
             <div class="text-center py-5">
@@ -56,34 +61,26 @@ async function fetchPolicyNews(pageNo = 1, numOfRows = 12, query = '') {
     }
 
     try {
-        const serviceKey = '4c32274bc908fe60086aea657eedb85f5eceb4b45186fe1e9e570ec12e554528';
-        const baseUrl = 'https://apis.data.go.kr/1371000/policyNewsService/policyNewsList';
-        const params = new URLSearchParams({
-            serviceKey: serviceKey,
-            pageNo: String(pageNo),
-            numOfRows: String(numOfRows)
-        });
-        if (query) params.set('searchTxt', query);
-
-        const url = `${baseUrl}?${params.toString()}`;
-        const res = await fetch(url);
-        const text = await res.text();
-
-        const parser = new DOMParser();
-        const xml = parser.parseFromString(text, 'application/xml');
-
-        const items = Array.from(xml.getElementsByTagName('item'));
-        const totalCountNode = xml.getElementsByTagName('totalCount')[0];
-        const totalCount = totalCountNode ? parseInt(totalCountNode.textContent || '0') : items.length;
-
-        renderNewsList(items, container);
-        renderPagination(pageNo, numOfRows, totalCount, query, pagination);
+        console.log('Fetching korea_now.json...');
+        const res = await fetch('data/korea_now.json?v=' + Date.now());
+        console.log('Response status:', res.status);
+        
+        if (!res.ok) throw new Error('JSON not found');
+        const data = await res.json();
+        console.log('Data received:', data);
+        
+        const items = (data && Array.isArray(data.items)) ? data.items : [];
+        console.log('Items count:', items.length);
+        
+        renderNewsListFromJson(items, container);
+        renderSimpleCount(items.length);
     } catch (e) {
+        console.error('Error loading news:', e);
         if (container) {
             container.innerHTML = `
-                <div class="alert alert-danger">
-                    <i class="fas fa-triangle-exclamation me-1"></i>
-                    정책뉴스를 불러오는 중 오류가 발생했습니다.
+                <div class="alert alert-warning">
+                    <i class="fas fa-circle-info me-1"></i>
+                    아직 뉴스 데이터가 준비되지 않았습니다. 잠시 후 새로고침해주세요.
                 </div>
             `;
         }
@@ -144,6 +141,55 @@ function renderNewsList(items, container) {
     });
 
     container.innerHTML = html;
+}
+
+function renderNewsListFromJson(items, container) {
+    if (!container) return;
+    if (!items || items.length === 0) {
+        container.innerHTML = `
+            <div class="alert alert-info">
+                <i class="fas fa-info-circle"></i> 표시할 뉴스가 없습니다.
+            </div>
+        `;
+        return;
+    }
+
+    let html = '';
+    items.forEach(row => {
+        const title = row.title || '';
+        const link = row.link || '#';
+        const summary = row.summary || '';
+        const pubDate = row.pub_date || '';
+        const author = row.author || '대한민국 정책브리핑';
+        const dateText = pubDate ? new Date(pubDate).toLocaleDateString('ko-KR') : '';
+
+        html += `
+            <article class="post-card">
+                <div class="post-card-body">
+                    <a href="${link}" target="_blank" rel="noopener" class="post-title">
+                        ${escapeHtml(title)}
+                    </a>
+                    <div class="post-meta">
+                        <i class="fas fa-user"></i> ${escapeHtml(author)}
+                        ${dateText ? `<span class="mx-2">|</span><i class=\"fas fa-calendar\"></i> ${dateText}` : ''}
+                    </div>
+                    <p class="post-excerpt">${escapeHtml(trimSummary(summary))}</p>
+                    <a href="${link}" target="_blank" rel="noopener" class="read-more">
+                        원문 보기 <i class="fas fa-arrow-right"></i>
+                    </a>
+                </div>
+            </article>
+        `;
+    });
+    container.innerHTML = html;
+}
+
+function renderSimpleCount(count) {
+    const pagination = document.getElementById('newsPagination');
+    if (!pagination) return;
+    pagination.innerHTML = `
+        <li class="page-item disabled"><span class="page-link">총 ${count}건</span></li>
+    `;
 }
 
 function renderPagination(pageNo, numOfRows, totalCount, query, paginationEl) {
