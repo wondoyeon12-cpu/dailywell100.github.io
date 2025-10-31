@@ -1,9 +1,6 @@
 // 대한민국은, 지금 - 정책브리핑 정책뉴스 연동
 
-console.log('korea-now.js loaded');
-
 document.addEventListener('DOMContentLoaded', function() {
-    console.log('korea-now.js DOMContentLoaded fired');
     
     // 카테고리 사이드바는 main.js에서 렌더링
     loadCategoriesSidebar();
@@ -47,7 +44,6 @@ function loadCategoriesSidebar() {
 
 async function loadStaticNewsJson() {
     const container = document.getElementById('newsContainer');
-    console.log('loadStaticNewsJson called, container:', container);
     
     if (container) {
         container.innerHTML = `
@@ -61,21 +57,16 @@ async function loadStaticNewsJson() {
     }
 
     try {
-        console.log('Fetching korea_now.json...');
         const res = await fetch('data/korea_now.json?v=' + Date.now());
-        console.log('Response status:', res.status);
         
         if (!res.ok) throw new Error('JSON not found');
         const data = await res.json();
-        console.log('Data received:', data);
         
         const items = (data && Array.isArray(data.items)) ? data.items : [];
-        console.log('Items count:', items.length);
         
         renderNewsListFromJson(items, container);
         renderSimpleCount(items.length);
     } catch (e) {
-        console.error('Error loading news:', e);
         if (container) {
             container.innerHTML = `
                 <div class="alert alert-warning">
