@@ -227,20 +227,6 @@ function renderSimpleCount(count) {
     `;
 }
 
-function stripHtml(html) {
-    if (!html) return '';
-    const tmp = document.createElement('div');
-    tmp.innerHTML = html;
-    return (tmp.textContent || tmp.innerText || '').trim();
-}
-
-function trimSummary(text) {
-    if (!text) return '';
-    const plain = stripHtml(text);
-    const t = plain.replace(/\s+/g, ' ').trim();
-    return t.length > 160 ? t.substring(0, 160) + '...' : t;
-}
-
 function renderPagination(pageNo, numOfRows, totalCount, query, paginationEl) {
     if (!paginationEl) return;
     const totalPages = Math.max(1, Math.ceil(totalCount / numOfRows));
@@ -275,6 +261,12 @@ function renderPagination(pageNo, numOfRows, totalCount, query, paginationEl) {
             fetchPolicyNews(p, numOfRows, query);
         });
     });
+}
+
+function trimSummary(text) {
+    if (!text) return '';
+    const t = text.replace(/\s+/g, ' ').trim();
+    return t.length > 160 ? t.substring(0, 160) + '...' : t;
 }
 
 function escapeHtml(s) {
