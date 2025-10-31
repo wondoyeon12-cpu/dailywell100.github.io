@@ -17,6 +17,17 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // 기본은 정적 JSON을 우선 사용 (CORS 이슈 회피)
     loadStaticNewsJson();
+
+    // 카테고리 탭 이벤트
+    const categoryTabs = document.querySelectorAll('#categoryTabs .nav-link');
+    categoryTabs.forEach(tab => {
+        tab.addEventListener('click', function(e) {
+            e.preventDefault();
+            categoryTabs.forEach(t => t.classList.remove('active'));
+            this.classList.add('active');
+            // 카테고리별 필터링 로직 추가 가능
+        });
+    });
 });
 
 function loadCategoriesSidebar() {
@@ -155,28 +166,52 @@ function renderNewsListFromJson(items, container) {
         const thumbnailUrl = row.thumbnail_url || '';
         const dateText = pubDate ? new Date(pubDate).toLocaleDateString('ko-KR') : '';
         
-        // 썸네일 이미지 HTML
-        const imageHtml = thumbnailUrl 
-            ? `<img src="${thumbnailUrl}" alt="${escapeHtml(title)}" class="post-card-image">`
-            : `<div class="post-card-image d-flex align-items-center justify-content-center" style="height: 200px;">
-                 <i class="fas fa-newspaper fa-4x text-muted"></i>
-               </div>`;
+        // 썸네일 이미지 URL 결정: summary HTML에서 첫 이미지 우선 사용
+        let finalThumbnailUrl = thumbnailUrl;
+        if (!finalThumbnailUrl && summary) {
+            // summary HTML에서 첫 번째 이미지 URL 추출
+            const imgMatch = summary.match(/<img[^>]+src=["']([^"']+)["']/);
+            if (imgMatch) {
+                finalThumbnailUrl = imgMatch[1];
+            }
+        }
+        
+        // 썸네일 이미지 HTML (에러 처리 추가)
+        const imageHtml = finalThumbnailUrl 
+            ? `<div class="news-item-image-wrapper">
+                 <img src="${finalThumbnailUrl}" alt="${escapeHtml(title)}" class="news-item-image" loading="lazy" referrerpolicy="no-referrer" onerror="this.onerror=null; this.parentElement.innerHTML='<div class=\\"news-item-placeholder\\"><i class=\\"fas fa-newspaper fa-3x text-muted\\"></i></div>';">
+               </div>`
+            : '';
 
         html += `
-            <article class="post-card">
-                ${imageHtml}
-                <div class="post-card-body">
-                    <a href="${link}" target="_blank" rel="noopener" class="post-title">
-                        ${escapeHtml(title)}
-                    </a>
-                    <div class="post-meta">
-                        <i class="fas fa-user"></i> ${escapeHtml(author)}
-                        ${dateText ? `<span class="mx-2">|</span><i class=\"fas fa-calendar\"></i> ${dateText}` : ''}
+            <article class="news-item-card">
+                <div class="row g-3">
+                    ${finalThumbnailUrl ? `
+                    <div class="col-md-4">
+                        ${imageHtml}
                     </div>
-                    <p class="post-excerpt">${escapeHtml(trimSummary(summary))}</p>
-                    <a href="${link}" target="_blank" rel="noopener" class="read-more">
-                        원문 보기 <i class="fas fa-arrow-right"></i>
-                    </a>
+                    <div class="col-md-8">
+                    ` : '<div class="col-12">'}
+                        <div class="news-item-content">
+                            <h3 class="news-item-title">
+                                <a href="${link}" target="_blank" rel="noopener">${escapeHtml(title)}</a>
+                            </h3>
+                            <div class="news-item-meta mb-2">
+                                <span class="news-author">
+                                    <i class="fas fa-user me-1"></i>${escapeHtml(author)}
+                                </span>
+                                ${dateText ? `
+                                <span class="news-date ms-3">
+                                    <i class="fas fa-calendar me-1"></i>${dateText}
+                                </span>
+                                ` : ''}
+                            </div>
+                            <p class="news-item-excerpt">${escapeHtml(trimSummary(summary))}</p>
+                            <a href="${link}" target="_blank" rel="noopener" class="news-item-link">
+                                원문 보기 <i class="fas fa-arrow-right ms-1"></i>
+                            </a>
+                        </div>
+                    </div>
                 </div>
             </article>
         `;

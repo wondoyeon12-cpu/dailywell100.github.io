@@ -521,6 +521,155 @@ body {
     background: rgba(255,255,255,0.1);
 }
 
+/* 정책뉴스 페이지 스타일 */
+#categoryTabs .nav-link {
+    color: #666;
+    font-weight: 500;
+    padding: 12px 20px;
+    border: none;
+    border-bottom: 3px solid transparent;
+    transition: all 0.3s ease;
+}
+
+#categoryTabs .nav-link:hover {
+    color: #667eea;
+    border-bottom-color: #667eea;
+}
+
+#categoryTabs .nav-link.active {
+    color: #667eea;
+    font-weight: 600;
+    border-bottom-color: #667eea;
+    background-color: transparent;
+}
+
+/* 뉴스 아이템 카드 */
+.news-item-card {
+    background: white;
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    padding: 20px;
+    margin-bottom: 20px;
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+}
+
+.news-item-card:hover {
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    transform: translateY(-2px);
+    border-color: #667eea;
+}
+
+.news-item-image-wrapper {
+    width: 100%;
+    height: 180px;
+    overflow: hidden;
+    border-radius: 6px;
+    background: #f5f5f5;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.news-item-image {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.3s ease;
+}
+
+.news-item-card:hover .news-item-image {
+    transform: scale(1.05);
+}
+
+.news-item-placeholder {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #f5f5f5;
+    color: #999;
+}
+
+.news-item-content {
+    padding: 0;
+}
+
+.news-item-title {
+    font-size: 1.25rem;
+    font-weight: 600;
+    margin-bottom: 12px;
+    line-height: 1.4;
+}
+
+.news-item-title a {
+    color: #333;
+    text-decoration: none;
+    transition: color 0.3s ease;
+}
+
+.news-item-title a:hover {
+    color: #667eea;
+}
+
+.news-item-meta {
+    color: #666;
+    font-size: 0.9rem;
+    margin-bottom: 12px;
+}
+
+.news-author,
+.news-date {
+    color: #666;
+}
+
+.news-item-excerpt {
+    color: #555;
+    line-height: 1.7;
+    margin-bottom: 15px;
+    font-size: 0.95rem;
+}
+
+.news-item-link {
+    color: #667eea;
+    font-weight: 500;
+    text-decoration: none;
+    font-size: 0.95rem;
+    transition: all 0.3s ease;
+    display: inline-flex;
+    align-items: center;
+}
+
+.news-item-link:hover {
+    color: #764ba2;
+}
+
+.news-item-link i {
+    transition: transform 0.3s ease;
+}
+
+.news-item-link:hover i {
+    transform: translateX(5px);
+}
+
+/* 페이지네이션 스타일 개선 */
+.pagination .page-link {
+    color: #667eea;
+    border-color: #dee2e6;
+}
+
+.pagination .page-link:hover {
+    color: #764ba2;
+    background-color: #f8f9fa;
+    border-color: #dee2e6;
+}
+
+.pagination .page-item.active .page-link {
+    background-color: #667eea;
+    border-color: #667eea;
+}
+
 /* 운세 카드 스타일 */
 .fortune-cards {
     margin-bottom: 2rem;
