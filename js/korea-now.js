@@ -152,10 +152,19 @@ function renderNewsListFromJson(items, container) {
         const summary = row.summary || '';
         const pubDate = row.pub_date || '';
         const author = row.author || '대한민국 정책브리핑';
+        const thumbnailUrl = row.thumbnail_url || '';
         const dateText = pubDate ? new Date(pubDate).toLocaleDateString('ko-KR') : '';
+        
+        // 썸네일 이미지 HTML
+        const imageHtml = thumbnailUrl 
+            ? `<img src="${thumbnailUrl}" alt="${escapeHtml(title)}" class="post-card-image">`
+            : `<div class="post-card-image d-flex align-items-center justify-content-center" style="height: 200px;">
+                 <i class="fas fa-newspaper fa-4x text-muted"></i>
+               </div>`;
 
         html += `
             <article class="post-card">
+                ${imageHtml}
                 <div class="post-card-body">
                     <a href="${link}" target="_blank" rel="noopener" class="post-title">
                         ${escapeHtml(title)}
