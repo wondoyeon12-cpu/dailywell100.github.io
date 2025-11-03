@@ -184,12 +184,14 @@ function renderNewsListFromJson(items, container) {
         }
 
         // 이미지 상단, 텍스트 하단 (초기 구현), 썸네일 깨짐 방지 및 품질 개선
-        // 이미지 로드 실패 시 더 나은 fallback 처리
-        // 이미지 URL에 캐시 버스터 추가 및 직접 이미지 로드 시도
+        // 이미지 프록시를 통해 CORS 및 접근 제한 문제 해결
         let imageUrlToUse = finalThumbnailUrl;
         if (imageUrlToUse) {
-            // 캐시 버스터 추가
-            imageUrlToUse = `${imageUrlToUse}${imageUrlToUse.includes('?') ? '&' : '?'}_v=${Date.now()}`;
+            // 이미지 프록시를 통해 로드 (weserv.nl 또는 유사 서비스)
+            // 프록시를 통해 CORS 문제와 referrer 정책 우회
+            const encodedUrl = encodeURIComponent(finalThumbnailUrl);
+            // 여러 프록시 옵션 시도 가능
+            imageUrlToUse = `https://images.weserv.nl/?url=${encodedUrl}&w=800&h=400&fit=cover&output=jpg&q=80`;
         }
         
         const imageHtml = imageUrlToUse 
@@ -201,7 +203,7 @@ function renderNewsListFromJson(items, container) {
                     loading="lazy" 
                     decoding="async"
                     style="width: 100%; height: 100%; object-fit: cover; object-position: center; transition: opacity 0.3s;" 
-                    onerror="(function(el){console.warn('이미지 로드 실패:', el.src); el.style.display='none'; var fb=el.nextElementSibling; if(fb) fb.style.display='flex';})(this);"
+                    onerror="(function(el){console.warn('프록시 이미지 로드 실패, 원본 시도:', el.src); var originalUrl='${finalThumbnailUrl}'; if(originalUrl && originalUrl !== el.src){el.src=originalUrl;} else {el.style.display='none'; var fb=el.nextElementSibling; if(fb) fb.style.display='flex';}})(this);"
                     onload="this.style.opacity='1';">
                  <div class="d-flex align-items-center justify-content-center" style="display: none; position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: #f8f9fa;">
                    <i class="fas fa-newspaper fa-4x text-muted"></i>
