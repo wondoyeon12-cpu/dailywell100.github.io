@@ -31,5 +31,13 @@
     "description": "정책브리핑 정책뉴스로 지금 대한민국의 정책 소식을 전합니다",
     "icon": "fa-flag",
     "count": 0
+  },
+  {
+    "id": 5,
+    "name": "가보자고",
+    "slug": "go-now",
+    "description": "국내 여행지와 행사 정보를 한눈에",
+    "icon": "fa-map-location-dot",
+    "count": 0
   }
 ]
