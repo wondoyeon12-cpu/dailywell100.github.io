@@ -174,8 +174,22 @@ function renderNewsListFromJson(items, container) {
         }
 
         // 이미지 상단, 텍스트 하단 (초기 구현), 썸네일 깨짐 방지 및 품질 개선
+        // 이미지 로드 실패 시 더 나은 fallback 처리
         const imageHtml = finalThumbnailUrl 
-            ? `<img src="${finalThumbnailUrl}" alt="${escapeHtml(title)}" class="post-card-image" loading="lazy" referrerpolicy="no-referrer" style="width: 100%; height: 250px; object-fit: cover; object-position: center; display: block;" onerror="this.onerror=null; this.src='https://via.placeholder.com/800x400?text=%EC%9D%B4%EB%AF%B8%EC%A7%80+%EC%97%86%EC%9D%8C';">`
+            ? `<div style="position: relative; width: 100%; height: 250px; background: #f8f9fa; overflow: hidden;">
+                 <img 
+                    src="${finalThumbnailUrl}" 
+                    alt="${escapeHtml(title)}" 
+                    class="post-card-image" 
+                    loading="lazy" 
+                    referrerpolicy="no-referrer" 
+                    style="width: 100%; height: 100%; object-fit: cover; object-position: center;" 
+                    onerror="(function(el){el.style.display='none'; var fb=el.nextElementSibling; if(fb) fb.style.display='flex';})(this);"
+                    onload="this.style.opacity='1';">
+                 <div class="d-flex align-items-center justify-content-center" style="display: none; position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: #f8f9fa;">
+                   <i class="fas fa-newspaper fa-4x text-muted"></i>
+                 </div>
+               </div>`
             : `<div class="post-card-image d-flex align-items-center justify-content-center" style="height: 250px; background: #f8f9fa;">
                  <i class="fas fa-newspaper fa-4x text-muted"></i>
                </div>`;
