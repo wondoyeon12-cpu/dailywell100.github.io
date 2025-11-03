@@ -190,10 +190,15 @@ function renderNewsListFromJson(items, container) {
             try {
                 const encodedUrl = encodeURIComponent(finalThumbnailUrl);
                 imageUrlToUse = `https://images.weserv.nl/?url=${encodedUrl}&w=800&h=400&fit=cover&output=jpg&q=85`;
+                console.log(`✅ 프록시 URL 생성: ${title.substring(0, 30)}...`, imageUrlToUse.substring(0, 80) + '...');
             } catch (e) {
-                // 인코딩 실패 시 원본 사용 (실패할 가능성 높음)
+                console.error(`❌ 프록시 URL 생성 실패: ${e.message}`);
                 imageUrlToUse = finalThumbnailUrl;
             }
+        } else if (finalThumbnailUrl) {
+            console.log(`ℹ️ 프록시 없이 직접 로드: ${title.substring(0, 30)}...`, finalThumbnailUrl.substring(0, 60) + '...');
+        } else {
+            console.warn(`⚠️ 이미지 URL 없음: ${title.substring(0, 30)}...`);
         }
 
         // 이미지 상단, 텍스트 하단 (초기 구현)
@@ -206,7 +211,8 @@ function renderNewsListFromJson(items, container) {
                     loading="lazy" 
                     decoding="async"
                     style="width: 100%; height: 100%; object-fit: cover; object-position: center;"
-                    onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                    onerror="console.error('❌ 이미지 로드 실패:', this.src.substring(0, 100)); this.style.display='none'; this.nextElementSibling.style.display='flex';"
+                    onload="console.log('✅ 이미지 로드 성공:', this.src.substring(0, 100));">
                  <div class="d-flex align-items-center justify-content-center" style="display: none; position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: #f8f9fa;">
                    <i class="fas fa-newspaper fa-4x text-muted"></i>
                  </div>
