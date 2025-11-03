@@ -183,32 +183,17 @@ function renderNewsListFromJson(items, container) {
             link = link.replace('http://', 'https://');
         }
 
-        // 이미지 상단, 텍스트 하단 (초기 구현), 썸네일 깨짐 방지 및 품질 개선
-        // 프록시 실패 시 원본 직접 시도
-        let imageUrlToUse = finalThumbnailUrl;
-        if (imageUrlToUse) {
-            // 프록시를 통해 먼저 시도
-            try {
-                const encodedUrl = encodeURIComponent(finalThumbnailUrl);
-                imageUrlToUse = `https://images.weserv.nl/?url=${encodedUrl}&w=800&h=400&fit=cover&output=jpg&q=85&il`;
-            } catch (e) {
-                // 인코딩 실패 시 원본 사용
-                imageUrlToUse = finalThumbnailUrl;
-            }
-        }
-        
-        const originalUrl = finalThumbnailUrl || '';
-        const imageHtml = imageUrlToUse 
+        // 이미지 상단, 텍스트 하단 (초기 구현)
+        const imageHtml = finalThumbnailUrl 
             ? `<div style="position: relative; width: 100%; height: 250px; background: #f8f9fa; overflow: hidden;">
                  <img 
-                    src="${imageUrlToUse}" 
+                    src="${finalThumbnailUrl}" 
                     alt="${escapeHtml(title)}" 
                     class="post-card-image" 
                     loading="lazy" 
                     decoding="async"
-                    style="width: 100%; height: 100%; object-fit: cover; object-position: center; transition: opacity 0.3s;" 
-                    onerror="(function(el, orig){if(orig && el.src !== orig && el.src.includes('weserv.nl')){console.log('프록시 실패, 원본 시도'); el.src=orig;} else {el.style.display='none'; var fb=el.nextElementSibling; if(fb) fb.style.display='flex';}})(this, '${originalUrl}');"
-                    onload="this.style.opacity='1';">
+                    style="width: 100%; height: 100%; object-fit: cover; object-position: center;"
+                    onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
                  <div class="d-flex align-items-center justify-content-center" style="display: none; position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: #f8f9fa;">
                    <i class="fas fa-newspaper fa-4x text-muted"></i>
                  </div>
