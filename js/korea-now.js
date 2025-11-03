@@ -175,6 +175,11 @@ function renderNewsListFromJson(items, container) {
             }
         }
         
+        // 디버깅: 이미지 URL 로그
+        if (finalThumbnailUrl) {
+            console.log(`이미지 URL: ${title.substring(0, 30)}... -> ${finalThumbnailUrl.substring(0, 60)}...`);
+        }
+        
         // HTTPS 강제 (혼합 콘텐츠 방지)
         if (typeof finalThumbnailUrl === 'string' && finalThumbnailUrl.startsWith('http://')) {
             finalThumbnailUrl = finalThumbnailUrl.replace('http://', 'https://');
@@ -192,8 +197,11 @@ function renderNewsListFromJson(items, container) {
                     class="post-card-image" 
                     loading="lazy" 
                     decoding="async"
+                    crossorigin="anonymous"
+                    referrerpolicy="no-referrer"
                     style="width: 100%; height: 100%; object-fit: cover; object-position: center;"
-                    onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                    onerror="console.error('이미지 로드 실패:', this.src); this.style.display='none'; this.nextElementSibling.style.display='flex';"
+                    onload="console.log('이미지 로드 성공:', this.src);">
                  <div class="d-flex align-items-center justify-content-center" style="display: none; position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: #f8f9fa;">
                    <i class="fas fa-newspaper fa-4x text-muted"></i>
                  </div>
