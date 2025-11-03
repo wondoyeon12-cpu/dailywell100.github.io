@@ -184,16 +184,20 @@ function renderNewsListFromJson(items, container) {
         }
 
         // 이미지 상단, 텍스트 하단 (초기 구현), 썸네일 깨짐 방지 및 품질 개선
-        // 이미지 프록시를 통해 CORS 및 접근 제한 문제 해결
+        // 프록시 실패 시 원본 직접 시도
         let imageUrlToUse = finalThumbnailUrl;
         if (imageUrlToUse) {
-            // 이미지 프록시를 통해 로드 (weserv.nl 또는 유사 서비스)
-            // 프록시를 통해 CORS 문제와 referrer 정책 우회
-            const encodedUrl = encodeURIComponent(finalThumbnailUrl);
-            // 여러 프록시 옵션 시도 가능
-            imageUrlToUse = `https://images.weserv.nl/?url=${encodedUrl}&w=800&h=400&fit=cover&output=jpg&q=80`;
+            // 프록시를 통해 먼저 시도
+            try {
+                const encodedUrl = encodeURIComponent(finalThumbnailUrl);
+                imageUrlToUse = `https://images.weserv.nl/?url=${encodedUrl}&w=800&h=400&fit=cover&output=jpg&q=85&il`;
+            } catch (e) {
+                // 인코딩 실패 시 원본 사용
+                imageUrlToUse = finalThumbnailUrl;
+            }
         }
         
+        const originalUrl = finalThumbnailUrl || '';
         const imageHtml = imageUrlToUse 
             ? `<div style="position: relative; width: 100%; height: 250px; background: #f8f9fa; overflow: hidden;">
                  <img 
@@ -203,7 +207,7 @@ function renderNewsListFromJson(items, container) {
                     loading="lazy" 
                     decoding="async"
                     style="width: 100%; height: 100%; object-fit: cover; object-position: center; transition: opacity 0.3s;" 
-                    onerror="(function(el){console.warn('프록시 이미지 로드 실패, 원본 시도:', el.src); var originalUrl='${finalThumbnailUrl}'; if(originalUrl && originalUrl !== el.src){el.src=originalUrl;} else {el.style.display='none'; var fb=el.nextElementSibling; if(fb) fb.style.display='flex';}})(this);"
+                    onerror="(function(el, orig){if(orig && el.src !== orig && el.src.includes('weserv.nl')){console.log('프록시 실패, 원본 시도'); el.src=orig;} else {el.style.display='none'; var fb=el.nextElementSibling; if(fb) fb.style.display='flex';}})(this, '${originalUrl}');"
                     onload="this.style.opacity='1';">
                  <div class="d-flex align-items-center justify-content-center" style="display: none; position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: #f8f9fa;">
                    <i class="fas fa-newspaper fa-4x text-muted"></i>
