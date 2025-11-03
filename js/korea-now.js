@@ -188,7 +188,7 @@ function renderNewsListFromJson(items, container) {
 
         // 이미지 상단, 텍스트 하단 (초기 구현)
         const imageHtml = imageUrlToUse 
-            ? `<div style="position: relative; width: 100%; height: 250px; background: #f8f9fa; overflow: hidden;">
+            ? `<div style="position: relative; width: 100%; height: 191px; background: #f8f9fa; overflow: hidden;">
                  <div class="d-flex align-items-center justify-content-center" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: #f8f9fa; z-index: 1;">
                    <i class="fas fa-newspaper fa-4x text-muted"></i>
                  </div>
@@ -203,7 +203,7 @@ function renderNewsListFromJson(items, container) {
                     onerror="console.error('❌ 이미지 로드 실패 (CORS일 수 있음):', this.src.substring(0, 100)); this.style.display='none'; this.previousElementSibling.style.zIndex='2';"
                     onload="console.log('✅ 이미지 로드 성공:', this.src.substring(0, 100), '크기:', this.naturalWidth + 'x' + this.naturalHeight); this.style.opacity='1'; this.previousElementSibling.style.display='none';">
                </div>`
-            : `<div class="post-card-image d-flex align-items-center justify-content-center" style="height: 250px; background: #f8f9fa;">
+            : `<div class="post-card-image d-flex align-items-center justify-content-center" style="height: 191px; background: #f8f9fa;">
                  <i class="fas fa-newspaper fa-4x text-muted"></i>
                </div>`;
 
