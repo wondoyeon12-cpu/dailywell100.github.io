@@ -173,10 +173,10 @@ function renderNewsListFromJson(items, container) {
             link = link.replace('http://', 'https://');
         }
 
-        // 이미지 상단, 텍스트 하단 (초기 구현), 썸네일 깨짐 방지
+        // 이미지 상단, 텍스트 하단 (초기 구현), 썸네일 깨짐 방지 및 품질 개선
         const imageHtml = finalThumbnailUrl 
-            ? `<img src="${finalThumbnailUrl}" alt="${escapeHtml(title)}" class="post-card-image" loading="lazy" referrerpolicy="no-referrer" onerror="this.onerror=null; this.src='https://via.placeholder.com/800x400?text=%EC%9D%B4%EB%AF%B8%EC%A7%80+%EC%97%86%EC%9D%8C';">`
-            : `<div class="post-card-image d-flex align-items-center justify-content-center">
+            ? `<img src="${finalThumbnailUrl}" alt="${escapeHtml(title)}" class="post-card-image" loading="lazy" referrerpolicy="no-referrer" style="width: 100%; height: 250px; object-fit: cover; object-position: center; display: block;" onerror="this.onerror=null; this.src='https://via.placeholder.com/800x400?text=%EC%9D%B4%EB%AF%B8%EC%A7%80+%EC%97%86%EC%9D%8C';">`
+            : `<div class="post-card-image d-flex align-items-center justify-content-center" style="height: 250px; background: #f8f9fa;">
                  <i class="fas fa-newspaper fa-4x text-muted"></i>
                </div>`;
 
