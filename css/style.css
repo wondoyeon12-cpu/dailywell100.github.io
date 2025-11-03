@@ -396,9 +396,7 @@ body {
     object-fit: cover;
     object-position: center;
     background: var(--bg-light);
-    image-rendering: -webkit-optimize-contrast;
-    image-rendering: crisp-edges;
-    image-rendering: high-quality;
+    image-rendering: auto;
     -ms-interpolation-mode: bicubic;
     display: block;
     margin: 0;
