@@ -187,9 +187,11 @@ function renderNewsListFromJson(items, container) {
         let imageUrlToUse = finalThumbnailUrl;
         if (finalThumbnailUrl && finalThumbnailUrl.includes('korea.kr')) {
             // korea.kr 이미지는 프록시를 통해 로드
+            // 품질 향상: 크기 제한 제거, 높은 품질 설정
             try {
                 const encodedUrl = encodeURIComponent(finalThumbnailUrl);
-                imageUrlToUse = `https://images.weserv.nl/?url=${encodedUrl}&w=800&h=400&fit=cover&output=jpg&q=85`;
+                // 고품질 설정: 원본 크기 유지 (max=1200), 높은 품질 (q=95), 원본 포맷 유지
+                imageUrlToUse = `https://images.weserv.nl/?url=${encodedUrl}&maxage=7d&q=95`;
                 console.log(`✅ 프록시 URL 생성: ${title.substring(0, 30)}...`, imageUrlToUse.substring(0, 80) + '...');
             } catch (e) {
                 console.error(`❌ 프록시 URL 생성 실패: ${e.message}`);
