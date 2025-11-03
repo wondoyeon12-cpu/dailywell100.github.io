@@ -194,7 +194,7 @@ function renderNewsListFromJson(items, container) {
                     loading="lazy" 
                     referrerpolicy="no-referrer" 
                     style="width: 100%; height: 100%; object-fit: cover; object-position: center;" 
-                    onerror="(function(el){el.style.display='none'; var fb=el.nextElementSibling; if(fb) fb.style.display='flex';})(this);"
+                    onerror="(function(el){console.warn('이미지 로드 실패:', el.src); el.style.display='none'; var fb=el.nextElementSibling; if(fb) fb.style.display='flex';})(this);"
                     onload="this.style.opacity='1';">
                  <div class="d-flex align-items-center justify-content-center" style="display: none; position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: #f8f9fa;">
                    <i class="fas fa-newspaper fa-4x text-muted"></i>
