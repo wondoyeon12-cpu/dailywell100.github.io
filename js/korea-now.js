@@ -59,19 +59,29 @@ async function loadStaticNewsJson() {
     try {
         const res = await fetch('data/korea_now.json?v=' + Date.now());
         
-        if (!res.ok) throw new Error('JSON not found');
+        if (!res.ok) {
+            console.error('❌ JSON 로드 실패:', res.status, res.statusText);
+            throw new Error(`JSON not found: ${res.status}`);
+        }
         const data = await res.json();
         
         const items = (data && Array.isArray(data.items)) ? data.items : [];
+        console.log(`✅ ${items.length}개 뉴스 로드 완료`);
+        
+        if (items.length === 0) {
+            console.warn('⚠️ 뉴스 아이템이 없습니다');
+        }
         
         renderNewsListFromJson(items, container);
         renderSimpleCount(items.length);
     } catch (e) {
+        console.error('❌ 뉴스 로드 에러:', e);
         if (container) {
             container.innerHTML = `
                 <div class="alert alert-warning">
                     <i class="fas fa-circle-info me-1"></i>
                     아직 뉴스 데이터가 준비되지 않았습니다. 잠시 후 새로고침해주세요.
+                    <br><small class="text-muted">에러: ${e.message}</small>
                 </div>
             `;
         }
