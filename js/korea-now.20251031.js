@@ -1,7 +1,6 @@
-// 대한민국은, 지금 - 정책브리핑 정책뉴스 연동
+// 대한민국은, 지금 - 정책브리핑 정책뉴스 연동 (versioned)
 
 document.addEventListener('DOMContentLoaded', function() {
-    
     // 카테고리 사이드바는 main.js에서 렌더링
     loadCategoriesSidebar();
 
@@ -17,6 +16,17 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // 기본은 정적 JSON을 우선 사용 (CORS 이슈 회피)
     loadStaticNewsJson();
+
+    // 카테고리 탭 이벤트
+    const categoryTabs = document.querySelectorAll('#categoryTabs .nav-link');
+    categoryTabs.forEach(tab => {
+        tab.addEventListener('click', function(e) {
+            e.preventDefault();
+            categoryTabs.forEach(t => t.classList.remove('active'));
+            this.classList.add('active');
+            // 카테고리별 필터링 로직 추가 가능
+        });
+    });
 });
 
 function loadCategoriesSidebar() {
@@ -76,62 +86,6 @@ async function loadStaticNewsJson() {
             `;
         }
     }
-}
-
-function getXmlText(parent, tagNames) {
-    if (!parent) return '';
-    const tryTags = Array.isArray(tagNames) ? tagNames : [tagNames];
-    for (const t of tryTags) {
-        const n = parent.getElementsByTagName(t)[0];
-        if (n && n.textContent) return n.textContent.trim();
-    }
-    return '';
-}
-
-function renderNewsList(items, container) {
-    if (!container) return;
-    if (!items || items.length === 0) {
-        container.innerHTML = `
-            <div class="alert alert-info">
-                <i class="fas fa-info-circle"></i> 표시할 뉴스가 없습니다.
-            </div>
-        `;
-        return;
-    }
-
-    let html = '';
-    items.forEach(item => {
-        const title = getXmlText(item, ['title', 'nttSj']);
-        const link = getXmlText(item, ['url', 'orgLink', 'linkUrl']);
-        const summary = getXmlText(item, ['summary', 'cn', 'nttCn']);
-        const pubDate = getXmlText(item, ['pbdSttDate', 'regDate', 'pubDate', 'createdDate']);
-        // 저작자/제공자 표기: writer, orgName, deptName 등 후보에서 우선순위로 선택
-        const author = getXmlText(item, ['writer', 'orgName', 'deptName', 'source', 'dept']);
-
-        const safeLink = link || '#';
-        const dateText = pubDate ? new Date(pubDate).toLocaleDateString('ko-KR') : '';
-        const authorText = author ? author : '대한민국 정책브리핑';
-
-        html += `
-            <article class="post-card">
-                <div class="post-card-body">
-                    <a href="${safeLink}" target="_blank" rel="noopener" class="post-title">
-                        ${escapeHtml(title)}
-                    </a>
-                    <div class="post-meta">
-                        <i class="fas fa-user"></i> ${escapeHtml(authorText)}
-                        ${dateText ? `<span class="mx-2">|</span><i class=\"fas fa-calendar\"></i> ${dateText}` : ''}
-                    </div>
-                    <p class="post-excerpt">${escapeHtml(trimSummary(summary))}</p>
-                    <a href="${safeLink}" target="_blank" rel="noopener" class="read-more">
-                        원문 보기 <i class="fas fa-arrow-right"></i>
-                    </a>
-                </div>
-            </article>
-        `;
-    });
-
-    container.innerHTML = html;
 }
 
 function renderNewsListFromJson(items, container) {
@@ -210,42 +164,6 @@ function renderSimpleCount(count) {
     `;
 }
 
-function renderPagination(pageNo, numOfRows, totalCount, query, paginationEl) {
-    if (!paginationEl) return;
-    const totalPages = Math.max(1, Math.ceil(totalCount / numOfRows));
-    const current = Math.min(pageNo, totalPages);
-
-    let html = '';
-    const makePage = (p, label, disabled = false, active = false) => {
-        return `
-            <li class="page-item ${disabled ? 'disabled' : ''} ${active ? 'active' : ''}">
-                <a class="page-link" href="#" data-page="${p}">${label}</a>
-            </li>
-        `;
-    };
-
-    html += makePage(1, '&laquo;', current === 1);
-    html += makePage(Math.max(1, current - 1), '&lsaquo;', current === 1);
-
-    const start = Math.max(1, current - 2);
-    const end = Math.min(totalPages, current + 2);
-    for (let p = start; p <= end; p++) {
-        html += makePage(p, String(p), false, p === current);
-    }
-
-    html += makePage(Math.min(totalPages, current + 1), '&rsaquo;', current === totalPages);
-    html += makePage(totalPages, '&raquo;', current === totalPages);
-
-    paginationEl.innerHTML = html;
-    paginationEl.querySelectorAll('a.page-link').forEach(a => {
-        a.addEventListener('click', (e) => {
-            e.preventDefault();
-            const p = parseInt(a.getAttribute('data-page'));
-            fetchPolicyNews(p, numOfRows, query);
-        });
-    });
-}
-
 function stripHtml(html) {
     if (!html) return '';
     const tmp = document.createElement('div');
@@ -268,5 +186,4 @@ function escapeHtml(s) {
         .replace(/"/g, '&quot;')
         .replace(/'/g, '&#039;');
 }
-
 
