@@ -185,14 +185,15 @@ function renderNewsListFromJson(items, container) {
 
         // 이미지 상단, 텍스트 하단 (초기 구현), 썸네일 깨짐 방지 및 품질 개선
         // 이미지 로드 실패 시 더 나은 fallback 처리
-        const imageHtml = finalThumbnailUrl 
+        // 이미지 URL에 캐시 버스터 추가하여 최신 이미지 강제 로드
+        const imageUrlWithCache = finalThumbnailUrl ? `${finalThumbnailUrl}${finalThumbnailUrl.includes('?') ? '&' : '?'}t=${Date.now()}` : '';
+        const imageHtml = imageUrlWithCache 
             ? `<div style="position: relative; width: 100%; height: 250px; background: #f8f9fa; overflow: hidden;">
                  <img 
-                    src="${finalThumbnailUrl}" 
+                    src="${imageUrlWithCache}" 
                     alt="${escapeHtml(title)}" 
                     class="post-card-image" 
                     loading="lazy" 
-                    referrerpolicy="no-referrer" 
                     style="width: 100%; height: 100%; object-fit: cover; object-position: center;" 
                     onerror="(function(el){console.warn('이미지 로드 실패:', el.src); el.style.display='none'; var fb=el.nextElementSibling; if(fb) fb.style.display='flex';})(this);"
                     onload="this.style.opacity='1';">
