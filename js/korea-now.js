@@ -183,25 +183,8 @@ function renderNewsListFromJson(items, container) {
             link = link.replace('http://', 'https://');
         }
 
-        // CORS 문제 해결: 이미지 프록시 사용
+        // 원본 이미지 직접 사용 (프록시 제거로 고품질 유지)
         let imageUrlToUse = finalThumbnailUrl;
-        if (finalThumbnailUrl && finalThumbnailUrl.includes('korea.kr')) {
-            // korea.kr 이미지는 프록시를 통해 로드
-            // 고품질 설정: 큰 크기로 요청하고 선명하게 처리
-            try {
-                const encodedUrl = encodeURIComponent(finalThumbnailUrl);
-                // 최대 크기 1600px로 확대, 품질 100%, 선명도 개선, 원본 포맷 유지
-                imageUrlToUse = `https://images.weserv.nl/?url=${encodedUrl}&w=1600&q=100&af&il&n=-1`;
-                console.log(`✅ 프록시 URL 생성: ${title.substring(0, 30)}...`, imageUrlToUse.substring(0, 80) + '...');
-            } catch (e) {
-                console.error(`❌ 프록시 URL 생성 실패: ${e.message}`);
-                imageUrlToUse = finalThumbnailUrl;
-            }
-        } else if (finalThumbnailUrl) {
-            console.log(`ℹ️ 프록시 없이 직접 로드: ${title.substring(0, 30)}...`, finalThumbnailUrl.substring(0, 60) + '...');
-        } else {
-            console.warn(`⚠️ 이미지 URL 없음: ${title.substring(0, 30)}...`);
-        }
 
         // 이미지 상단, 텍스트 하단 (초기 구현)
         const imageHtml = imageUrlToUse 
@@ -215,8 +198,9 @@ function renderNewsListFromJson(items, container) {
                     class="post-card-image" 
                     loading="lazy" 
                     decoding="async"
-                    style="position: relative; z-index: 2; width: 100%; height: 100%; object-fit: cover; object-position: center; display: block; opacity: 0; transition: opacity 0.3s; image-rendering: -webkit-optimize-contrast; image-rendering: crisp-edges;"
-                    onerror="console.error('❌ 이미지 로드 실패:', this.src.substring(0, 100)); this.style.display='none'; this.previousElementSibling.style.zIndex='2';"
+                    style="position: relative; z-index: 2; width: 100%; height: 100%; object-fit: cover; object-position: center; display: block; opacity: 0; transition: opacity 0.3s;"
+                    referrerpolicy="no-referrer"
+                    onerror="console.error('❌ 이미지 로드 실패 (CORS일 수 있음):', this.src.substring(0, 100)); this.style.display='none'; this.previousElementSibling.style.zIndex='2';"
                     onload="console.log('✅ 이미지 로드 성공:', this.src.substring(0, 100), '크기:', this.naturalWidth + 'x' + this.naturalHeight); this.style.opacity='1'; this.previousElementSibling.style.display='none';">
                </div>`
             : `<div class="post-card-image d-flex align-items-center justify-content-center" style="height: 250px; background: #f8f9fa;">
