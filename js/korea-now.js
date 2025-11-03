@@ -175,11 +175,6 @@ function renderNewsListFromJson(items, container) {
             }
         }
         
-        // 디버깅: 이미지 URL 로그
-        if (finalThumbnailUrl) {
-            console.log(`이미지 URL: ${title.substring(0, 30)}... -> ${finalThumbnailUrl.substring(0, 60)}...`);
-        }
-        
         // HTTPS 강제 (혼합 콘텐츠 방지)
         if (typeof finalThumbnailUrl === 'string' && finalThumbnailUrl.startsWith('http://')) {
             finalThumbnailUrl = finalThumbnailUrl.replace('http://', 'https://');
@@ -188,20 +183,30 @@ function renderNewsListFromJson(items, container) {
             link = link.replace('http://', 'https://');
         }
 
+        // CORS 문제 해결: 이미지 프록시 사용
+        let imageUrlToUse = finalThumbnailUrl;
+        if (finalThumbnailUrl && finalThumbnailUrl.includes('korea.kr')) {
+            // korea.kr 이미지는 프록시를 통해 로드
+            try {
+                const encodedUrl = encodeURIComponent(finalThumbnailUrl);
+                imageUrlToUse = `https://images.weserv.nl/?url=${encodedUrl}&w=800&h=400&fit=cover&output=jpg&q=85`;
+            } catch (e) {
+                // 인코딩 실패 시 원본 사용 (실패할 가능성 높음)
+                imageUrlToUse = finalThumbnailUrl;
+            }
+        }
+
         // 이미지 상단, 텍스트 하단 (초기 구현)
-        const imageHtml = finalThumbnailUrl 
+        const imageHtml = imageUrlToUse 
             ? `<div style="position: relative; width: 100%; height: 250px; background: #f8f9fa; overflow: hidden;">
                  <img 
-                    src="${finalThumbnailUrl}" 
+                    src="${imageUrlToUse}" 
                     alt="${escapeHtml(title)}" 
                     class="post-card-image" 
                     loading="lazy" 
                     decoding="async"
-                    crossorigin="anonymous"
-                    referrerpolicy="no-referrer"
                     style="width: 100%; height: 100%; object-fit: cover; object-position: center;"
-                    onerror="console.error('이미지 로드 실패:', this.src); this.style.display='none'; this.nextElementSibling.style.display='flex';"
-                    onload="console.log('이미지 로드 성공:', this.src);">
+                    onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
                  <div class="d-flex align-items-center justify-content-center" style="display: none; position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: #f8f9fa;">
                    <i class="fas fa-newspaper fa-4x text-muted"></i>
                  </div>
