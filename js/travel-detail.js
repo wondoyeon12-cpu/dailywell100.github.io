@@ -89,6 +89,8 @@ async function loadFromAPI() {
 }
 
 function displayBasicInfo(item) {
+  console.log('📝 displayBasicInfo 호출:', item);
+  
   // 기본 정보 표시
   document.getElementById('detailTitle').textContent = item.title || '제목 없음';
   document.getElementById('detailAddress').textContent = item.addr1 || '';
@@ -98,6 +100,14 @@ function displayBasicInfo(item) {
     document.getElementById('detailAddr2').textContent = item.addr2;
     document.getElementById('detailAddr2').style.display = 'block';
   }
+  
+  console.log('✅ 기본 정보 표시 완료:', {
+    title: item.title,
+    addr1: item.addr1,
+    tel: item.tel,
+    mapx: item.mapx,
+    mapy: item.mapy
+  });
   
   // 이미지
   const mainImage = document.getElementById('detailMainImage');
@@ -137,7 +147,12 @@ function displayBasicInfo(item) {
 }
 
 async function loadDetailInfo() {
-  if (!currentContentId || !currentContentTypeId) return;
+  if (!currentContentId || !currentContentTypeId) {
+    console.log('❌ contentId 또는 contentTypeId가 없습니다:', {currentContentId, currentContentTypeId});
+    return;
+  }
+  
+  console.log('🔍 상세 정보 로드 시작:', {currentContentId, currentContentTypeId});
   
   try {
     // detailIntro2 API 호출
@@ -150,14 +165,37 @@ async function loadDetailInfo() {
       contentTypeId: currentContentTypeId,
     });
     
+    console.log('📡 detailIntro2 API 호출:', `${API_BASE}/detailIntro2?${introParams}`);
     const introResponse = await fetch(`${API_BASE}/detailIntro2?${introParams}`);
-    const introData = await introResponse.json();
     
-    if (introData.response && introData.response.body && introData.response.body.items) {
-      const introItem = introData.response.body.items.item;
-      if (introItem) {
-        const intro = Array.isArray(introItem) ? introItem[0] : introItem;
-        displayDetailIntro(intro);
+    if (!introResponse.ok) {
+      console.error('❌ detailIntro2 HTTP 오류:', introResponse.status, introResponse.statusText);
+    }
+    
+    const introData = await introResponse.json();
+    console.log('📦 detailIntro2 응답:', introData);
+    
+    if (introData.response) {
+      const header = introData.response.header || {};
+      const resultCode = header.resultCode || '';
+      const resultMsg = header.resultMsg || '';
+      
+      console.log('📋 detailIntro2 결과:', {resultCode, resultMsg});
+      
+      if (resultCode === '0000' || resultCode === '00' || resultCode === '0' || resultCode === '') {
+        const body = introData.response.body || {};
+        const items = body.items || {};
+        const introItem = items.item;
+        
+        if (introItem) {
+          const intro = Array.isArray(introItem) ? introItem[0] : introItem;
+          console.log('✅ detailIntro2 데이터:', intro);
+          displayDetailIntro(intro);
+        } else {
+          console.log('⚠️ detailIntro2 데이터 없음');
+        }
+      } else {
+        console.error('❌ detailIntro2 API 오류:', resultCode, resultMsg);
       }
     }
     
@@ -171,47 +209,91 @@ async function loadDetailInfo() {
       contentTypeId: currentContentTypeId,
     });
     
+    console.log('📡 detailInfo2 API 호출:', `${API_BASE}/detailInfo2?${infoParams}`);
     const infoResponse = await fetch(`${API_BASE}/detailInfo2?${infoParams}`);
-    const infoData = await infoResponse.json();
     
-    if (infoData.response && infoData.response.body && infoData.response.body.items) {
-      const infoItems = infoData.response.body.items.item;
-      if (infoItems) {
-        const infos = Array.isArray(infoItems) ? infoItems : [infoItems];
-        displayDetailInfo(infos);
+    if (!infoResponse.ok) {
+      console.error('❌ detailInfo2 HTTP 오류:', infoResponse.status, infoResponse.statusText);
+    }
+    
+    const infoData = await infoResponse.json();
+    console.log('📦 detailInfo2 응답:', infoData);
+    
+    if (infoData.response) {
+      const header = infoData.response.header || {};
+      const resultCode = header.resultCode || '';
+      const resultMsg = header.resultMsg || '';
+      
+      console.log('📋 detailInfo2 결과:', {resultCode, resultMsg});
+      
+      if (resultCode === '0000' || resultCode === '00' || resultCode === '0' || resultCode === '') {
+        const body = infoData.response.body || {};
+        const items = body.items || {};
+        const infoItems = items.item;
+        
+        if (infoItems) {
+          const infos = Array.isArray(infoItems) ? infoItems : [infoItems];
+          console.log('✅ detailInfo2 데이터:', infos);
+          displayDetailInfo(infos);
+        } else {
+          console.log('⚠️ detailInfo2 데이터 없음');
+        }
+      } else {
+        console.error('❌ detailInfo2 API 오류:', resultCode, resultMsg);
       }
     }
   } catch (error) {
-    console.error('상세 정보 로드 실패:', error);
+    console.error('❌ 상세 정보 로드 실패:', error);
+    console.error('상세 오류:', error.stack);
   }
 }
 
 function displayDetailIntro(intro) {
-  // 개요
-  if (intro.overview) {
-    document.getElementById('detailOverview').textContent = intro.overview;
+  console.log('📝 displayDetailIntro 호출:', intro);
+  
+  let hasData = false;
+  
+  // 개요 (여러 필드 확인)
+  const overview = intro.overview || intro.overviewtext || intro.overviewtext || '';
+  if (overview && overview.trim()) {
+    document.getElementById('detailOverview').textContent = overview;
     document.getElementById('overviewSection').style.display = 'block';
+    hasData = true;
+    console.log('✅ 개요 표시:', overview.substring(0, 50) + '...');
   }
   
-  // 이용시간
-  if (intro.usetime) {
-    document.getElementById('detailUsetime').textContent = intro.usetime;
+  // 이용시간 (여러 필드 확인)
+  const usetime = intro.usetime || intro.usetimeculture || intro.usetimefestival || intro.usetimeleports || '';
+  if (usetime && usetime.trim()) {
+    document.getElementById('detailUsetime').textContent = usetime;
     document.getElementById('usetimeItem').style.display = 'flex';
     document.getElementById('infoSection').style.display = 'block';
+    hasData = true;
+    console.log('✅ 이용시간 표시:', usetime);
   }
   
-  // 휴무일
-  if (intro.restdate) {
-    document.getElementById('detailRestdate').textContent = intro.restdate;
+  // 휴무일 (여러 필드 확인)
+  const restdate = intro.restdate || intro.restdateculture || intro.restdatefestival || intro.restdateleports || '';
+  if (restdate && restdate.trim()) {
+    document.getElementById('detailRestdate').textContent = restdate;
     document.getElementById('restdateItem').style.display = 'flex';
     document.getElementById('infoSection').style.display = 'block';
+    hasData = true;
+    console.log('✅ 휴무일 표시:', restdate);
   }
   
-  // 문의
-  if (intro.infocenter) {
-    document.getElementById('detailInfocenter').textContent = intro.infocenter;
+  // 문의 (여러 필드 확인)
+  const infocenter = intro.infocenter || intro.infocenterfood || intro.infocentertour || '';
+  if (infocenter && infocenter.trim()) {
+    document.getElementById('detailInfocenter').textContent = infocenter;
     document.getElementById('infocenterItem').style.display = 'flex';
     document.getElementById('infoSection').style.display = 'block';
+    hasData = true;
+    console.log('✅ 문의 표시:', infocenter);
+  }
+  
+  if (!hasData) {
+    console.log('⚠️ displayDetailIntro: 표시할 데이터가 없습니다. 전체 객체:', intro);
   }
 }
 
