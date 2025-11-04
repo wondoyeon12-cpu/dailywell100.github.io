@@ -166,8 +166,12 @@ function createTravelCard(item) {
   const thumb = item.firstimage || item.firstimage2 || '';
   const addr = item.addr1 || '';
   const tel = item.tel || '';
-  const link = item.detail_link || 
-    (title ? `https://search.naver.com/search.naver?query=${encodeURIComponent(title)}` : '#');
+  // 상세 페이지 링크 생성
+  const contentid = item.contentid || item.contentId || '';
+  const contenttypeid = item.contenttypeid || item.contentTypeId || '12';
+  const link = contentid 
+    ? `travel-detail.html?contentid=${contentid}&contenttypeid=${contenttypeid}`
+    : (item.detail_link || (title ? `https://search.naver.com/search.naver?query=${encodeURIComponent(title)}` : '#'));
   
   // 이미지 HTML
   const imageHtml = thumb
@@ -183,13 +187,13 @@ function createTravelCard(item) {
   return `
     <div class="col-md-6 col-lg-4">
       <div class="travel-card">
-        <a href="${link}" target="_blank" rel="noopener" class="text-decoration-none">
+        <a href="${link}" ${link.startsWith('travel-detail.html') ? '' : 'target="_blank" rel="noopener"'} class="text-decoration-none">
           ${imageHtml}
         </a>
         <div class="travel-card-body">
           ${regionBadge}
           <h5 class="travel-card-title">
-            <a href="${link}" target="_blank" rel="noopener" class="text-decoration-none text-dark">
+            <a href="${link}" ${link.startsWith('travel-detail.html') ? '' : 'target="_blank" rel="noopener"'} class="text-decoration-none text-dark">
               ${escapeHtml(title)}
             </a>
           </h5>
@@ -204,8 +208,8 @@ function createTravelCard(item) {
           </div>
           ` : ''}
           <div class="mt-3">
-            <a href="${link}" target="_blank" rel="noopener" class="btn btn-sm btn-outline-primary w-100">
-              자세히 보기 <i class="fas fa-external-link-alt ms-1"></i>
+            <a href="${link}" ${link.startsWith('travel-detail.html') ? '' : 'target="_blank" rel="noopener"'} class="btn btn-sm btn-outline-primary w-100">
+              자세히 보기 ${link.startsWith('travel-detail.html') ? '<i class="fas fa-arrow-right ms-1"></i>' : '<i class="fas fa-external-link-alt ms-1"></i>'}
             </a>
           </div>
         </div>
