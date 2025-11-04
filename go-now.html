@@ -8,6 +8,87 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <link rel="stylesheet" href="css/style.css?v=20251201-17">
+    <style>
+        .travel-hero {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 4rem 0;
+            margin-bottom: 3rem;
+            border-radius: 0 0 2rem 2rem;
+        }
+        .travel-card {
+            border: none;
+            border-radius: 1rem;
+            overflow: hidden;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            height: 100%;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .travel-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+        }
+        .travel-card-image {
+            width: 100%;
+            height: 200px;
+            object-fit: cover;
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+        }
+        .travel-card-body {
+            padding: 1.5rem;
+        }
+        .travel-card-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin-bottom: 0.75rem;
+            color: #2d3748;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+        .travel-card-location {
+            color: #718096;
+            font-size: 0.9rem;
+            margin-bottom: 0.5rem;
+        }
+        .travel-card-tel {
+            color: #4a5568;
+            font-size: 0.85rem;
+        }
+        .filter-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            margin-bottom: 2rem;
+        }
+        .filter-tag {
+            padding: 0.5rem 1rem;
+            border-radius: 2rem;
+            background: #f7fafc;
+            border: 2px solid #e2e8f0;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 0.9rem;
+        }
+        .filter-tag:hover,
+        .filter-tag.active {
+            background: #667eea;
+            color: white;
+            border-color: #667eea;
+        }
+        .stats-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-radius: 1rem;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+        }
+        .stats-number {
+            font-size: 2.5rem;
+            font-weight: bold;
+        }
+    </style>
 </head>
 <body>
     <header class="site-header">
@@ -39,41 +120,134 @@
         </div>
     </nav>
 
-    <main class="py-5">
+    <!-- 히어로 섹션 -->
+    <div class="travel-hero">
+        <div class="container">
+            <div class="row align-items-center">
+                <div class="col-md-8">
+                    <h1 class="display-5 mb-3"><i class="fas fa-map-location-dot me-3"></i>가보자고</h1>
+                    <p class="lead mb-4">한국관광공사 데이터로 제공하는 최신 국내 여행지 정보</p>
+                    <p class="small opacity-75 mb-0">
+                        <i class="fas fa-info-circle me-2"></i>
+                        출처: <a href="https://api.visitkorea.or.kr/" target="_blank" rel="noopener" class="text-white text-decoration-underline">한국관광공사 관광정보 API</a>
+                    </p>
+                </div>
+                <div class="col-md-4 text-center">
+                    <i class="fas fa-route fa-6x opacity-50"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <main class="py-4">
         <div class="container">
             <div class="row">
-                <div class="col-lg-8">
-                    <div class="mb-4">
-                        <h1><i class="fas fa-map-location-dot text-primary"></i> 가보자고</h1>
-                        <p class="text-muted">한국관광공사 관광정보 API로 국내 여행지와 행사를 소개합니다</p>
-                        <p class="small text-muted mb-0">출처: <a href="https://api.visitkorea.or.kr/" target="_blank" rel="noopener">한국관광공사 DATA</a></p>
-                    </div>
-
-                    <div class="card mb-3">
-                        <div class="card-body">
-                            <form id="travelSearchForm" class="row g-2">
-                                <div class="col-sm-8"><input type="text" id="travelQuery" class="form-control" placeholder="지역/키워드"></div>
-                                <div class="col-sm-4 d-grid"><button class="btn btn-primary" type="submit"><i class="fas fa-search me-1"></i> 검색</button></div>
-                            </form>
+                <div class="col-lg-9">
+                    <!-- 통계 카드 -->
+                    <div class="stats-card" id="statsCard">
+                        <div class="row text-center">
+                            <div class="col-md-4">
+                                <div class="stats-number" id="totalCount">0</div>
+                                <div class="small opacity-75">전체 여행지</div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="stats-number" id="displayCount">0</div>
+                                <div class="small opacity-75">표시 중</div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="stats-number" id="seoulCount">0</div>
+                                <div class="small opacity-75">서울 지역</div>
+                            </div>
                         </div>
                     </div>
 
+                    <!-- 검색 및 필터 -->
+                    <div class="card mb-4 shadow-sm">
+                        <div class="card-body">
+                            <form id="travelSearchForm" class="row g-3">
+                                <div class="col-md-8">
+                                    <div class="input-group input-group-lg">
+                                        <span class="input-group-text bg-primary text-white">
+                                            <i class="fas fa-search"></i>
+                                        </span>
+                                        <input type="text" id="travelQuery" class="form-control" placeholder="여행지 이름 또는 지역을 검색하세요...">
+                                    </div>
+                                </div>
+                                <div class="col-md-4 d-grid">
+                                    <button class="btn btn-primary btn-lg" type="submit">
+                                        <i class="fas fa-search me-2"></i>검색
+                                    </button>
+                                </div>
+                            </form>
+                            <div class="filter-tags mt-3" id="filterTags">
+                                <span class="filter-tag active" data-filter="all">전체</span>
+                                <span class="filter-tag" data-filter="서울">서울</span>
+                                <span class="filter-tag" data-filter="부산">부산</span>
+                                <span class="filter-tag" data-filter="경기">경기</span>
+                                <span class="filter-tag" data-filter="제주">제주</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 여행지 목록 -->
                     <div id="travelContainer">
                         <div class="text-center py-5">
-                            <div class="spinner-border text-primary" role="status"><span class="visually-hidden">Loading...</span></div>
-                            <p class="mt-3">여행 정보를 불러오는 중...</p>
+                            <div class="spinner-border text-primary" role="status" style="width: 3rem; height: 3rem;">
+                                <span class="visually-hidden">Loading...</span>
+                            </div>
+                            <p class="mt-3 text-muted">여행 정보를 불러오는 중...</p>
                         </div>
                     </div>
 
-                    <nav class="mt-4" aria-label="여행 페이지네이션"><ul class="pagination" id="travelPagination"></ul></nav>
+                    <!-- 페이지네이션 -->
+                    <nav class="mt-5" aria-label="여행 페이지네이션">
+                        <ul class="pagination justify-content-center" id="travelPagination"></ul>
+                    </nav>
                 </div>
 
-                <div class="col-lg-4">
-                    <div class="card shadow-sm mb-4">
+                <div class="col-lg-3">
+                    <!-- 카테고리 위젯 -->
+                    <div class="card shadow-sm mb-4 sticky-top" style="top: 20px;">
                         <div class="card-body">
-                            <h5 class="card-title"><i class="fas fa-folder"></i> 카테고리</h5>
-                            <ul class="list-unstyled" id="categoryList">
-                                <li class="text-center text-muted py-3"><div class="spinner-border spinner-border-sm" role="status"></div><p class="small mt-2 mb-0">로딩 중...</p></li>
+                            <h5 class="card-title mb-3">
+                                <i class="fas fa-folder text-primary me-2"></i>카테고리
+                            </h5>
+                            <ul class="list-unstyled mb-0" id="categoryList">
+                                <li class="text-center text-muted py-3">
+                                    <div class="spinner-border spinner-border-sm" role="status"></div>
+                                    <p class="small mt-2 mb-0">로딩 중...</p>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <!-- 빠른 링크 -->
+                    <div class="card shadow-sm">
+                        <div class="card-body">
+                            <h5 class="card-title mb-3">
+                                <i class="fas fa-link text-primary me-2"></i>빠른 링크
+                            </h5>
+                            <ul class="list-unstyled mb-0">
+                                <li class="mb-2">
+                                    <a href="index.html" class="text-decoration-none">
+                                        <i class="fas fa-home me-2 text-muted"></i>홈으로
+                                    </a>
+                                </li>
+                                <li class="mb-2">
+                                    <a href="health.html" class="text-decoration-none">
+                                        <i class="fas fa-heartbeat me-2 text-danger"></i>건강상식
+                                    </a>
+                                </li>
+                                <li class="mb-2">
+                                    <a href="korea-now.html" class="text-decoration-none">
+                                        <i class="fas fa-flag me-2 text-info"></i>대한민국은, 지금
+                                    </a>
+                                </li>
+                                <li class="mb-2">
+                                    <a href="fortune.html" class="text-decoration-none">
+                                        <i class="fas fa-star me-2 text-warning"></i>오늘의 운세
+                                    </a>
+                                </li>
                             </ul>
                         </div>
                     </div>
@@ -112,8 +286,6 @@
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
     <script src="js/main.js"></script>
-    <script src="js/go-now.js?v=20251201-1"></script>
+    <script src="js/go-now.js?v=20251202-1"></script>
 </body>
 </html>
-
-
