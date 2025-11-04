@@ -109,13 +109,19 @@ function displayBasicInfo(item) {
     mapy: item.mapy
   });
   
+  // 이미지 URL을 HTTPS로 변환
+  function convertToHttps(url) {
+    if (!url) return '';
+    return url.replace(/^http:\/\//, 'https://');
+  }
+  
   // 이미지
   const mainImage = document.getElementById('detailMainImage');
   if (item.firstimage) {
-    mainImage.src = item.firstimage;
+    mainImage.src = convertToHttps(item.firstimage);
     mainImage.alt = item.title || '여행지 이미지';
   } else if (item.firstimage2) {
-    mainImage.src = item.firstimage2;
+    mainImage.src = convertToHttps(item.firstimage2);
     mainImage.alt = item.title || '여행지 이미지';
   } else {
     mainImage.style.display = 'none';
@@ -123,8 +129,8 @@ function displayBasicInfo(item) {
   
   // 이미지 갤러리
   const images = [];
-  if (item.firstimage) images.push(item.firstimage);
-  if (item.firstimage2) images.push(item.firstimage2);
+  if (item.firstimage) images.push(convertToHttps(item.firstimage));
+  if (item.firstimage2) images.push(convertToHttps(item.firstimage2));
   
   if (images.length > 1) {
     displayImageGallery(images);
@@ -154,97 +160,34 @@ async function loadDetailInfo() {
   
   console.log('🔍 상세 정보 로드 시작:', {currentContentId, currentContentTypeId});
   
+  // JSON 파일에서 상세 정보 로드 시도
   try {
-    // detailIntro2 API 호출
-    const introParams = new URLSearchParams({
-      serviceKey: API_KEY,
-      MobileOS: 'ETC',
-      MobileApp: 'DW100',
-      _type: 'json',
-      contentId: currentContentId,
-      contentTypeId: currentContentTypeId,
+    const response = await fetch('data/go_now.json?v=' + Date.now());
+    const data = await response.json();
+    const items = Array.isArray(data.items) ? data.items : [];
+    
+    // contentid로 항목 찾기
+    const item = items.find(it => {
+      const cid = (it.contentid || it.contentId || '').toString();
+      return cid === currentContentId.toString();
     });
     
-    console.log('📡 detailIntro2 API 호출:', `${API_BASE}/detailIntro2?${introParams}`);
-    const introResponse = await fetch(`${API_BASE}/detailIntro2?${introParams}`);
-    
-    if (!introResponse.ok) {
-      console.error('❌ detailIntro2 HTTP 오류:', introResponse.status, introResponse.statusText);
-    }
-    
-    const introData = await introResponse.json();
-    console.log('📦 detailIntro2 응답:', introData);
-    
-    if (introData.response) {
-      const header = introData.response.header || {};
-      const resultCode = header.resultCode || '';
-      const resultMsg = header.resultMsg || '';
+    if (item && item.detail) {
+      console.log('✅ JSON 파일에서 상세 정보 찾음:', item.detail);
       
-      console.log('📋 detailIntro2 결과:', {resultCode, resultMsg});
-      
-      if (resultCode === '0000' || resultCode === '00' || resultCode === '0' || resultCode === '') {
-        const body = introData.response.body || {};
-        const items = body.items || {};
-        const introItem = items.item;
-        
-        if (introItem) {
-          const intro = Array.isArray(introItem) ? introItem[0] : introItem;
-          console.log('✅ detailIntro2 데이터:', intro);
-          displayDetailIntro(intro);
-        } else {
-          console.log('⚠️ detailIntro2 데이터 없음');
-        }
-      } else {
-        console.error('❌ detailIntro2 API 오류:', resultCode, resultMsg);
+      if (item.detail.intro) {
+        displayDetailIntro(item.detail.intro);
       }
-    }
-    
-    // detailInfo2 API 호출
-    const infoParams = new URLSearchParams({
-      serviceKey: API_KEY,
-      MobileOS: 'ETC',
-      MobileApp: 'DW100',
-      _type: 'json',
-      contentId: currentContentId,
-      contentTypeId: currentContentTypeId,
-    });
-    
-    console.log('📡 detailInfo2 API 호출:', `${API_BASE}/detailInfo2?${infoParams}`);
-    const infoResponse = await fetch(`${API_BASE}/detailInfo2?${infoParams}`);
-    
-    if (!infoResponse.ok) {
-      console.error('❌ detailInfo2 HTTP 오류:', infoResponse.status, infoResponse.statusText);
-    }
-    
-    const infoData = await infoResponse.json();
-    console.log('📦 detailInfo2 응답:', infoData);
-    
-    if (infoData.response) {
-      const header = infoData.response.header || {};
-      const resultCode = header.resultCode || '';
-      const resultMsg = header.resultMsg || '';
       
-      console.log('📋 detailInfo2 결과:', {resultCode, resultMsg});
-      
-      if (resultCode === '0000' || resultCode === '00' || resultCode === '0' || resultCode === '') {
-        const body = infoData.response.body || {};
-        const items = body.items || {};
-        const infoItems = items.item;
-        
-        if (infoItems) {
-          const infos = Array.isArray(infoItems) ? infoItems : [infoItems];
-          console.log('✅ detailInfo2 데이터:', infos);
-          displayDetailInfo(infos);
-        } else {
-          console.log('⚠️ detailInfo2 데이터 없음');
-        }
-      } else {
-        console.error('❌ detailInfo2 API 오류:', resultCode, resultMsg);
+      if (item.detail.infos) {
+        displayDetailInfo(item.detail.infos);
       }
+    } else {
+      console.log('⚠️ JSON 파일에 상세 정보가 없습니다. 기본 정보만 표시됩니다.');
+      console.log('💡 상세 정보를 수집하려면 fetch_go_now.py를 실행하세요.');
     }
   } catch (error) {
     console.error('❌ 상세 정보 로드 실패:', error);
-    console.error('상세 오류:', error.stack);
   }
 }
 
