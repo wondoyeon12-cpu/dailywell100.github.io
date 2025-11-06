@@ -3,9 +3,10 @@
   command = "echo 'No build step required'"
 
 # Netlify Functions는 자동으로 /.netlify/functions/chat로 매핑됩니다
-# /api/chat로 접근할 수 있도록 rewrite 설정
+# /api/chat로 접근할 수 있도록 rewrite 설정 (status 200은 rewrite)
 [[redirects]]
   from = "/api/chat"
   to = "/.netlify/functions/chat"
   status = 200
+  force = true
 
