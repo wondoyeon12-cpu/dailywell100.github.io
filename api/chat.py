@@ -7,24 +7,38 @@ import os
 
 def handler(req):
     """Vercel 서버리스 함수 핸들러"""
+    # CORS 헤더 (항상 설정)
     headers = {
         'Content-Type': 'application/json',
         'Access-Control-Allow-Origin': '*',
         'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
-        'Access-Control-Allow-Headers': 'Content-Type'
+        'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+        'Access-Control-Max-Age': '86400'
     }
     
     try:
-        # 요청 메서드 추출
-        method = getattr(req, 'method', None)
-        if not method and isinstance(req, dict):
-            method = req.get('method', 'GET')
+        # 요청 메서드 추출 (여러 방법 시도)
+        method = None
+        if hasattr(req, 'method'):
+            method = req.method
+        elif isinstance(req, dict):
+            method = req.get('method')
+        elif hasattr(req, 'get'):
+            method = req.get('method')
+        
+        # 기본값
         if not method:
             method = 'GET'
         
-        # OPTIONS 요청
+        method = method.upper() if isinstance(method, str) else 'GET'
+        
+        # OPTIONS 요청 (CORS preflight) - 최우선 처리
         if method == 'OPTIONS':
-            return {'statusCode': 200, 'headers': headers, 'body': ''}
+            return {
+                'statusCode': 200,
+                'headers': headers,
+                'body': ''
+            }
         
         # GET 요청 (Health check)
         if method == 'GET':
