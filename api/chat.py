@@ -5,20 +5,20 @@ GitHub 저장소와 연동되어 자동 배포됩니다.
 
 import json
 import os
-from openai import OpenAI
 
-# OpenAI API 키 (Vercel 환경 변수에서 가져옴)
-OPENAI_API_KEY = os.environ.get('OPENAI_API_KEY')
+# OpenAI는 런타임에만 import (배포 시 오류 방지)
+_openai_client = None
 
-if not OPENAI_API_KEY:
-    # 배포 시 오류가 발생하므로, 런타임에만 체크
-    pass
-
-# OpenAI 클라이언트는 런타임에 초기화
 def get_openai_client():
-    if not OPENAI_API_KEY:
-        raise ValueError("OPENAI_API_KEY 환경 변수가 설정되지 않았습니다.")
-    return OpenAI(api_key=OPENAI_API_KEY)
+    """OpenAI 클라이언트를 지연 초기화"""
+    global _openai_client
+    if _openai_client is None:
+        from openai import OpenAI
+        OPENAI_API_KEY = os.environ.get('OPENAI_API_KEY')
+        if not OPENAI_API_KEY:
+            raise ValueError("OPENAI_API_KEY 환경 변수가 설정되지 않았습니다.")
+        _openai_client = OpenAI(api_key=OPENAI_API_KEY)
+    return _openai_client
 
 
 def handler(req):
