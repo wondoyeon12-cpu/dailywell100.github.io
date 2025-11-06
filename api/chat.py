@@ -3,7 +3,6 @@ Vercel Serverless Function for OpenAI API Proxy
 GitHub 저장소와 연동되어 자동 배포됩니다.
 """
 
-from http.server import BaseHTTPRequestHandler
 import json
 import os
 from openai import OpenAI
@@ -17,28 +16,53 @@ if not OPENAI_API_KEY:
 openai_client = OpenAI(api_key=OPENAI_API_KEY)
 
 
-class handler(BaseHTTPRequestHandler):
-    def do_POST(self):
-        """POST 요청 처리"""
-        if self.path != '/api/chat':
-            self.send_error(404)
-            return
-        
+def handler(req):
+    """Vercel 서버리스 함수 핸들러"""
+    # CORS 헤더 설정
+    headers = {
+        'Content-Type': 'application/json',
+        'Access-Control-Allow-Origin': '*',
+        'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
+        'Access-Control-Allow-Headers': 'Content-Type'
+    }
+    
+    # OPTIONS 요청 처리 (CORS preflight)
+    if req.method == 'OPTIONS':
+        return {
+            'statusCode': 200,
+            'headers': headers,
+            'body': ''
+        }
+    
+    # GET 요청 처리 (Health check)
+    if req.method == 'GET':
+        return {
+            'statusCode': 200,
+            'headers': headers,
+            'body': json.dumps({
+                "status": "ok",
+                "message": "OpenAI 프록시 서버 정상 작동 중"
+            })
+        }
+    
+    # POST 요청 처리
+    if req.method == 'POST':
         try:
-            # 요청 본문 읽기
-            content_length = int(self.headers.get('Content-Length', 0))
-            body = self.rfile.read(content_length)
-            data = json.loads(body.decode('utf-8'))
+            # 요청 본문 파싱
+            body = req.body
+            if isinstance(body, str):
+                data = json.loads(body)
+            else:
+                data = json.loads(body.decode('utf-8')) if body else {}
             
             # 필수 필드 확인
             messages = data.get('messages')
             if not messages:
-                self.send_response(400)
-                self.send_header('Content-Type', 'application/json')
-                self.send_header('Access-Control-Allow-Origin', '*')
-                self.end_headers()
-                self.wfile.write(json.dumps({"error": "messages 필드가 필요합니다."}).encode())
-                return
+                return {
+                    'statusCode': 400,
+                    'headers': headers,
+                    'body': json.dumps({"error": "messages 필드가 필요합니다."})
+                }
             
             # OpenAI API 호출
             response = openai_client.chat.completions.create(
@@ -63,38 +87,23 @@ class handler(BaseHTTPRequestHandler):
                 }
             }
             
-            self.send_response(200)
-            self.send_header('Content-Type', 'application/json')
-            self.send_header('Access-Control-Allow-Origin', '*')
-            self.end_headers()
-            self.wfile.write(json.dumps(result).encode())
+            return {
+                'statusCode': 200,
+                'headers': headers,
+                'body': json.dumps(result)
+            }
             
         except Exception as e:
-            self.send_response(500)
-            self.send_header('Content-Type', 'application/json')
-            self.send_header('Access-Control-Allow-Origin', '*')
-            self.end_headers()
-            self.wfile.write(json.dumps({"error": str(e)}).encode())
+            return {
+                'statusCode': 500,
+                'headers': headers,
+                'body': json.dumps({"error": str(e)})
+            }
     
-    def do_OPTIONS(self):
-        """CORS preflight 요청 처리"""
-        self.send_response(200)
-        self.send_header('Access-Control-Allow-Origin', '*')
-        self.send_header('Access-Control-Allow-Methods', 'POST, OPTIONS')
-        self.send_header('Access-Control-Allow-Headers', 'Content-Type')
-        self.end_headers()
-    
-    def do_GET(self):
-        """Health check"""
-        if self.path == '/api/chat' or self.path == '/api/health':
-            self.send_response(200)
-            self.send_header('Content-Type', 'application/json')
-            self.send_header('Access-Control-Allow-Origin', '*')
-            self.end_headers()
-            self.wfile.write(json.dumps({
-                "status": "ok",
-                "message": "OpenAI 프록시 서버 정상 작동 중"
-            }).encode())
-        else:
-            self.send_error(404)
+    # 다른 메서드 처리
+    return {
+        'statusCode': 405,
+        'headers': headers,
+        'body': json.dumps({"error": "Method not allowed"})
+    }
 
