@@ -10,6 +10,9 @@ let chatHistory = [];
 
 // 페이지 로드 시 초기화
 document.addEventListener('DOMContentLoaded', function() {
+    // API 키 설정 모달은 더 이상 필요 없음 (서버에서 관리)
+    // 하지만 설정 버튼은 유지 (나중에 다른 설정에 사용할 수 있음)
+    
     const savedTitle = localStorage.getItem('userTitle');
     if (savedTitle) {
         selectGender(savedTitle);
@@ -78,24 +81,18 @@ async function sendMessage(event) {
     showTypingIndicator();
     
     try {
-        // OpenAI API 호출
-        const apiKey = localStorage.getItem('openai_api_key');
+        // 프록시 서버 URL 설정 (프로덕션/개발 환경 자동 감지)
+        const proxyUrl = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
+            ? 'http://localhost:5001/api/chat'  // 로컬 개발
+            : 'https://dailywell100-github-io.vercel.app/api/chat';  // Vercel 배포 URL
         
-        if (!apiKey) {
-            // API 키가 없으면 안내 메시지
-            removeTypingIndicator();
-            addAIMessage('앗! 아직 설정이 안 됐어요 😅\n\n관리자에게 OpenAI API 키를 설정해달라고 해주세요!\n\n개발자 도구(F12)의 콘솔에서:\nlocalStorage.setItem("openai_api_key", "your-api-key-here")');
-            return;
-        }
-        
-        const response = await fetch('https://api.openai.com/v1/chat/completions', {
+        const response = await fetch(proxyUrl, {
             method: 'POST',
             headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${apiKey}`
+                'Content-Type': 'application/json'
             },
             body: JSON.stringify({
-                model: 'gpt-4',
+                model: 'gpt-4o-mini',  // 더 저렴한 모델 사용
                 messages: [
                     {
                         role: 'system',
@@ -127,6 +124,29 @@ async function sendMessage(event) {
             })
         });
         
+        if (!response.ok) {
+            const errorData = await response.json().catch(() => ({}));
+            
+            // 타이핑 인디케이터 제거
+            removeTypingIndicator();
+            
+            const errorMessage = errorData.error || '알 수 없는 오류가 발생했습니다.';
+            
+            if (response.status === 401) {
+                // API 키 오류
+                addAIMessage('서버 설정에 문제가 있는 것 같아요 😢\n\n관리자에게 문의해주세요!');
+            } else if (response.status === 429) {
+                // 요청 한도 초과
+                addAIMessage('요청이 너무 많아서 잠시 기다려야 할 것 같아요 😅\n\n잠시 후에 다시 시도해주세요!');
+            } else if (response.status === 500) {
+                // 서버 오류
+                addAIMessage(`서버에 문제가 생긴 것 같아요 😢\n\n${errorMessage}\n\n잠시 후에 다시 시도해주세요!`);
+            } else {
+                addAIMessage(`아! 문제가 생긴 것 같아요 😢\n\n${errorMessage}\n\n잠시 후에 다시 시도해주세요!`);
+            }
+            return;
+        }
+        
         const data = await response.json();
         
         // 타이핑 인디케이터 제거
@@ -149,7 +169,13 @@ async function sendMessage(event) {
     } catch (error) {
         console.error('Error:', error);
         removeTypingIndicator();
-        addAIMessage('아! 잠깐 문제가 생긴 것 같아요 😢 조금 후에 다시 얘기해요!');
+        
+        // 네트워크 오류 등
+        if (error.message.includes('Failed to fetch')) {
+            addAIMessage('인터넷 연결을 확인해주세요! 😢\n\n네트워크가 연결되어 있는지 확인하고 다시 시도해주세요.');
+        } else {
+            addAIMessage('아! 잠깐 문제가 생긴 것 같아요 😢 조금 후에 다시 얘기해요!');
+        }
     } finally {
         // 전송 버튼 활성화
         sendButton.disabled = false;
@@ -344,4 +370,6 @@ function scrollToBottom() {
     const chatMessages = document.getElementById('chatMessages');
     chatMessages.scrollTop = chatMessages.scrollHeight;
 }
+
+// API 키 설정 관련 함수들은 더 이상 필요 없음 (서버에서 관리)
 
