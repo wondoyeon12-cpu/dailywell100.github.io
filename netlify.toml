@@ -2,9 +2,6 @@
   functions = "netlify/functions"
   command = "echo 'No build step required'"
 
-[build.environment]
-  PYTHON_VERSION = "3.9"
-
 [[redirects]]
   from = "/api/chat"
   to = "/.netlify/functions/chat"
