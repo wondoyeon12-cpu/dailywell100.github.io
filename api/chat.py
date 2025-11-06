@@ -8,12 +8,16 @@ import os
 def handler(req):
     """Vercel 서버리스 함수 핸들러"""
     # CORS 헤더 (항상 설정)
-    headers = {
-        'Content-Type': 'application/json',
+    cors_headers = {
         'Access-Control-Allow-Origin': '*',
         'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
         'Access-Control-Allow-Headers': 'Content-Type, Authorization',
         'Access-Control-Max-Age': '86400'
+    }
+    
+    headers = {
+        'Content-Type': 'application/json',
+        **cors_headers
     }
     
     try:
@@ -30,13 +34,13 @@ def handler(req):
         if not method:
             method = 'GET'
         
-        method = method.upper() if isinstance(method, str) else 'GET'
+        method = str(method).upper() if method else 'GET'
         
         # OPTIONS 요청 (CORS preflight) - 최우선 처리
         if method == 'OPTIONS':
             return {
                 'statusCode': 200,
-                'headers': headers,
+                'headers': cors_headers,
                 'body': ''
             }
         
@@ -144,9 +148,14 @@ def handler(req):
         
     except Exception as e:
         import traceback
+        # 오류 발생 시에도 CORS 헤더 포함
+        error_headers = {
+            'Content-Type': 'application/json',
+            **cors_headers
+        }
         return {
             'statusCode': 500,
-            'headers': headers,
+            'headers': error_headers,
             'body': json.dumps({
                 "error": str(e),
                 "type": type(e).__name__,
