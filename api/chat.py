@@ -16,7 +16,7 @@ if not OPENAI_API_KEY:
 openai_client = OpenAI(api_key=OPENAI_API_KEY)
 
 
-def handler(req):
+def handler(request):
     """Vercel 서버리스 함수 핸들러"""
     # CORS 헤더 설정
     headers = {
@@ -26,8 +26,11 @@ def handler(req):
         'Access-Control-Allow-Headers': 'Content-Type'
     }
     
+    # 요청 메서드 가져오기
+    method = request.method if hasattr(request, 'method') else request.get('method', 'GET')
+    
     # OPTIONS 요청 처리 (CORS preflight)
-    if req.method == 'OPTIONS':
+    if method == 'OPTIONS':
         return {
             'statusCode': 200,
             'headers': headers,
@@ -35,7 +38,7 @@ def handler(req):
         }
     
     # GET 요청 처리 (Health check)
-    if req.method == 'GET':
+    if method == 'GET':
         return {
             'statusCode': 200,
             'headers': headers,
@@ -46,14 +49,25 @@ def handler(req):
         }
     
     # POST 요청 처리
-    if req.method == 'POST':
+    if method == 'POST':
         try:
             # 요청 본문 파싱
-            body = req.body
-            if isinstance(body, str):
-                data = json.loads(body)
+            body = None
+            if hasattr(request, 'body'):
+                body = request.body
+            elif isinstance(request, dict):
+                body = request.get('body', '')
+            
+            # 본문 파싱
+            if body:
+                if isinstance(body, str):
+                    data = json.loads(body)
+                elif isinstance(body, bytes):
+                    data = json.loads(body.decode('utf-8'))
+                else:
+                    data = body if isinstance(body, dict) else {}
             else:
-                data = json.loads(body.decode('utf-8')) if body else {}
+                data = {}
             
             # 필수 필드 확인
             messages = data.get('messages')
@@ -94,10 +108,15 @@ def handler(req):
             }
             
         except Exception as e:
+            import traceback
+            error_details = traceback.format_exc()
             return {
                 'statusCode': 500,
                 'headers': headers,
-                'body': json.dumps({"error": str(e)})
+                'body': json.dumps({
+                    "error": str(e),
+                    "traceback": error_details
+                })
             }
     
     # 다른 메서드 처리
