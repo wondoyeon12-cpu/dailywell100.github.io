@@ -82,9 +82,11 @@ async function sendMessage(event) {
     
     try {
         // 프록시 서버 URL 설정 (프로덕션/개발 환경 자동 감지)
+        // ⚠️ Netlify 배포 후 실제 URL로 변경하세요!
+        // 예: 'https://your-site-name.netlify.app/api/chat'
         const proxyUrl = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
             ? 'http://localhost:5001/api/chat'  // 로컬 개발
-            : 'https://dailywell100-github-io.vercel.app/api/chat';  // Vercel 배포 URL
+            : 'https://YOUR-NETLIFY-SITE.netlify.app/api/chat';  // Netlify 배포 URL로 변경 필요!
         
         const response = await fetch(proxyUrl, {
             method: 'POST',
