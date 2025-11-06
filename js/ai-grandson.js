@@ -130,6 +130,12 @@ async function sendMessage(event) {
             // 타이핑 인디케이터 제거
             removeTypingIndicator();
             
+            // 콘솔에 상세 오류 출력 (디버깅용)
+            console.error('❌ API 오류:', {
+                status: response.status,
+                error: errorData
+            });
+            
             const errorMessage = errorData.error || '알 수 없는 오류가 발생했습니다.';
             
             if (response.status === 401) {
@@ -139,8 +145,13 @@ async function sendMessage(event) {
                 // 요청 한도 초과
                 addAIMessage('요청이 너무 많아서 잠시 기다려야 할 것 같아요 😅\n\n잠시 후에 다시 시도해주세요!');
             } else if (response.status === 500) {
-                // 서버 오류
-                addAIMessage(`서버에 문제가 생긴 것 같아요 😢\n\n${errorMessage}\n\n잠시 후에 다시 시도해주세요!`);
+                // 서버 오류 - 상세 정보 표시
+                let errorText = '서버에 문제가 생긴 것 같아요 😢\n\n';
+                errorText += errorMessage;
+                if (errorData.traceback) {
+                    console.error('상세 오류:', errorData.traceback);
+                }
+                addAIMessage(errorText + '\n\n잠시 후에 다시 시도해주세요!');
             } else {
                 addAIMessage(`아! 문제가 생긴 것 같아요 😢\n\n${errorMessage}\n\n잠시 후에 다시 시도해주세요!`);
             }
