@@ -75,6 +75,22 @@ async function loadData() {
             console.warn('⚠️ 가보자고 데이터 로드 실패:', error);
         }
         
+        // 운세 데이터의 날짜를 오늘로 업데이트
+        const today = new Date();
+        const todayStr = `${today.getMonth() + 1}월 ${today.getDate()}일`;
+        const todayISO = today.toISOString();
+        
+        posts = posts.map(post => {
+            if (post.category === '오늘의 운세') {
+                // 제목의 날짜 부분을 오늘로 변경
+                post.title = post.title.replace(/\d+월 \d+일/, todayStr);
+                // 생성일/수정일을 오늘로 변경
+                post.created_at = todayISO;
+                post.updated_at = todayISO;
+            }
+            return post;
+        });
+        
         allPosts = posts;
         console.log('📦 전체 게시글 데이터 로드 완료:', allPosts.length, '개');
         
