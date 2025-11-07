@@ -788,6 +788,203 @@ body {
     box-shadow: 0 5px 20px rgba(79, 172, 254, 0.4);
 }
 
+/* 운세 페이지 강화 스타일 */
+.fortune-enhanced-section {
+    margin-top: 40px;
+}
+
+.fortune-section-title {
+    color: var(--primary-color);
+    font-size: 1.5rem;
+    font-weight: bold;
+    margin-bottom: 20px;
+    padding-bottom: 10px;
+    border-bottom: 3px solid var(--secondary-color);
+}
+
+.fortune-section-title .emoji {
+    font-size: 1.8rem;
+    margin-right: 10px;
+}
+
+.fortune-luck-card {
+    background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+    border-radius: 15px;
+    padding: 25px;
+    text-align: center;
+    box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+    transition: transform 0.3s ease;
+}
+
+.fortune-luck-card:hover {
+    transform: translateY(-5px);
+}
+
+.luck-icon {
+    font-size: 3rem;
+    margin-bottom: 10px;
+}
+
+.luck-label {
+    font-size: 0.9rem;
+    color: #6c757d;
+    margin-bottom: 8px;
+}
+
+.luck-value {
+    font-size: 1.3rem;
+    font-weight: bold;
+    color: var(--primary-color);
+}
+
+.color-badge {
+    display: inline-block;
+    padding: 5px 15px;
+    border-radius: 20px;
+    color: white;
+    font-weight: bold;
+    margin: 2px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+}
+
+.time-fortune-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 15px;
+    margin-top: 15px;
+}
+
+.time-fortune-item {
+    background: white;
+    border: 2px solid var(--border-color);
+    border-radius: 12px;
+    padding: 20px;
+    text-align: center;
+}
+
+.time-period {
+    font-size: 1.1rem;
+    font-weight: bold;
+    margin-bottom: 10px;
+    color: var(--text-dark);
+}
+
+.time-rating {
+    font-size: 1.5rem;
+    color: #FFD700;
+    margin-bottom: 10px;
+}
+
+.time-desc {
+    font-size: 0.95rem;
+    color: var(--text-light);
+    line-height: 1.5;
+}
+
+.compatibility-content {
+    background: #fff5f5;
+    border-left: 4px solid #e74c3c;
+    padding: 20px;
+    border-radius: 8px;
+}
+
+.compatibility-content p {
+    margin-bottom: 10px;
+    font-size: 1.05rem;
+}
+
+.warning-content {
+    background: #fff3cd;
+    border: 2px solid #ffc107;
+    border-radius: 12px;
+    padding: 20px;
+}
+
+.warning-item {
+    display: flex;
+    align-items: center;
+    margin-bottom: 12px;
+    font-size: 1.05rem;
+}
+
+.warning-icon {
+    font-size: 1.5rem;
+    margin-right: 12px;
+}
+
+.recommend-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 15px;
+    margin-top: 15px;
+}
+
+.recommend-item {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border-radius: 12px;
+    padding: 20px;
+    text-align: center;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+}
+
+.recommend-icon {
+    font-size: 2.5rem;
+    margin-bottom: 10px;
+}
+
+.recommend-title {
+    font-size: 1.1rem;
+    font-weight: bold;
+    margin-bottom: 8px;
+}
+
+.recommend-desc {
+    font-size: 0.9rem;
+    opacity: 0.95;
+}
+
+.fortune-quote {
+    background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+    color: white;
+    padding: 30px;
+    border-radius: 15px;
+    text-align: center;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+}
+
+.quote-icon {
+    font-size: 3rem;
+    margin-bottom: 15px;
+}
+
+.quote-text {
+    font-size: 1.3rem;
+    font-style: italic;
+    line-height: 1.8;
+}
+
+.fortune-accuracy-section {
+    padding: 20px;
+    background: #f8f9fa;
+    border-radius: 10px;
+    border: 1px dashed #dee2e6;
+}
+
+.star-filled {
+    color: #FFD700;
+    font-size: 1.2rem;
+}
+
+.star-empty {
+    color: #dee2e6;
+    font-size: 1.2rem;
+}
+
+.emoji {
+    display: inline-block;
+}
+
 /* 반응형 */
 @media (max-width: 768px) {
     .site-title {
