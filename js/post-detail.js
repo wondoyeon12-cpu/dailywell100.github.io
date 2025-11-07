@@ -28,11 +28,20 @@ async function loadPostDetail(postId) {
         const response = await fetch('data/posts.json');
         const data = await response.json();
         
-        const post = data.posts.find(p => p.id == postId);
+        let post = data.posts.find(p => p.id == postId);
         
         if (!post) {
             showError('게시글을 찾을 수 없습니다.');
             return;
+        }
+        
+        // 운세 데이터의 날짜를 오늘로 업데이트
+        if (post.category === '오늘의 운세') {
+            const today = new Date();
+            const todayStr = `${today.getMonth() + 1}월 ${today.getDate()}일`;
+            post.title = post.title.replace(/\d+월 \d+일/, todayStr);
+            post.created_at = today.toISOString();
+            post.updated_at = today.toISOString();
         }
         
         // 게시글 상세 표시
