@@ -198,7 +198,7 @@ function renderNewsListFromJson(items, container) {
                     class="post-card-image-inner" 
                     loading="lazy" 
                     decoding="async"
-                    style="position: relative; z-index: 2; display: block; max-width: 100%; max-height: 100%; width: auto; height: auto; object-fit: contain; opacity: 0; transition: opacity 0.3s; margin: 0 auto;"
+                    style="position: relative; z-index: 2; display: block; width: 100%; height: 100%; object-fit: cover; object-position: center; opacity: 0; transition: opacity 0.3s;"
                     referrerpolicy="no-referrer"
                     onerror="console.error('❌ 이미지 로드 실패 (CORS일 수 있음):', this.src.substring(0, 100)); this.style.display='none'; this.previousElementSibling.style.zIndex='2';"
                     onload="console.log('✅ 이미지 로드 성공:', this.src.substring(0, 100), '크기:', this.naturalWidth + 'x' + this.naturalHeight); this.style.opacity='1'; this.previousElementSibling.style.display='none';">
