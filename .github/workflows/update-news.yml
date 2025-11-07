@@ -27,8 +27,7 @@ jobs:
       
       - name: Fetch latest policy news
         run: |
-          python ../fetch_policy_news.py
-        working-directory: ${{ github.workspace }}
+          python fetch_policy_news.py
       
       - name: Commit and push if changed
         run: |
