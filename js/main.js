@@ -101,8 +101,11 @@ function displayCategoryPage(categoryName) {
 function createPostCard(post) {
     const categorySlug = getCategorySlug(post.category);
     const imageHtml = post.featured_image 
-        ? `<img src="${post.featured_image}" alt="${post.title}" class="post-card-image">`
-        : `<div class="post-card-image d-flex align-items-center justify-content-center">
+        ? `<img src="${post.featured_image}" alt="${post.title}" class="post-card-image" 
+             style="width: 284px; height: 191px; object-fit: cover; object-position: center; display: block;"
+             onload="this.style.opacity='1';">`
+        : `<div class="post-card-image d-flex align-items-center justify-content-center" 
+             style="width: 284px; height: 191px;">
              <i class="fas fa-newspaper fa-4x text-muted"></i>
            </div>`;
     

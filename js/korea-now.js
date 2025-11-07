@@ -186,24 +186,20 @@ function renderNewsListFromJson(items, container) {
         // 원본 이미지 직접 사용 (프록시 제거로 고품질 유지)
         let imageUrlToUse = finalThumbnailUrl;
 
-        // 이미지 상단, 텍스트 하단 (초기 구현)
+        // 이미지 상단, 텍스트 하단 - 284x191 고정 크기
         const imageHtml = imageUrlToUse 
-            ? `<div class="post-card-thumb" style="position: relative; width: 284px; height: 191px; background: #f8f9fa; overflow: hidden;">
-                 <div class="d-flex align-items-center justify-content-center" style="position: absolute; top: 0; left: 0; width: 284px; height: 191px; background: #f8f9fa; z-index: 1;">
-                   <i class="fas fa-newspaper fa-4x text-muted"></i>
-                 </div>
+            ? `<div style="width: 284px; height: 191px; background: #f8f9fa; overflow: hidden; position: relative;">
                  <img 
                     src="${imageUrlToUse}" 
                     alt="${escapeHtml(title)}" 
-                    class="post-card-image-inner" 
                     loading="lazy" 
                     decoding="async"
-                    style="position: relative; z-index: 2; display: block; width: 100%; height: 100%; object-fit: cover; object-position: center; opacity: 0; transition: opacity 0.3s;"
+                    style="width: 284px; height: 191px; object-fit: cover; object-position: center; display: block;"
                     referrerpolicy="no-referrer"
-                    onerror="console.error('❌ 이미지 로드 실패 (CORS일 수 있음):', this.src.substring(0, 100)); this.style.display='none'; this.previousElementSibling.style.zIndex='2';"
-                    onload="console.log('✅ 이미지 로드 성공:', this.src.substring(0, 100), '크기:', this.naturalWidth + 'x' + this.naturalHeight); this.style.opacity='1'; this.previousElementSibling.style.display='none';">
+                    onerror="this.style.display='none'; this.parentElement.innerHTML='<div class=\\'d-flex align-items-center justify-content-center\\' style=\\'width:284px;height:191px;background:#f8f9fa;\\'><i class=\\'fas fa-newspaper fa-4x text-muted\\'></i></div>';"
+                    onload="this.style.opacity='1';">
                </div>`
-            : `<div class="post-card-thumb d-flex align-items-center justify-content-center" style="width: 284px; height: 191px; background: #f8f9fa;">
+            : `<div style="width: 284px; height: 191px; background: #f8f9fa; display: flex; align-items: center; justify-content: center;">
                  <i class="fas fa-newspaper fa-4x text-muted"></i>
                </div>`;
 
