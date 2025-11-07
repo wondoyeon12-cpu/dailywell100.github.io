@@ -84,7 +84,7 @@ async function sendMessage(event) {
         // 프록시 서버 URL 설정 (프로덕션/개발 환경 자동 감지)
         const proxyUrl = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
             ? 'http://localhost:5001/api/chat'  // 로컬 개발
-            : `${window.location.origin}/api/chat`;  // Netlify 배포 URL (자동 감지)
+            : 'https://heroic-blini-5c9b32.netlify.app/.netlify/functions/chat';  // Netlify Functions URL
         
         const response = await fetch(proxyUrl, {
             method: 'POST',
