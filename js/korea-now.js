@@ -1,4 +1,8 @@
-// 대한민국은, 지금 - 정책브리핑 정책뉴스 연동
+// 대한민국은, 지금 - 정책브리핑 정책뉴스 연동 (페이지네이션 포함)
+
+let allNewsItems = [];
+let currentPage = 1;
+const ITEMS_PER_PAGE = 10;
 
 document.addEventListener('DOMContentLoaded', function() {
     
@@ -11,7 +15,7 @@ document.addEventListener('DOMContentLoaded', function() {
         form.addEventListener('submit', function(e) {
             e.preventDefault();
             const q = document.getElementById('newsQuery').value.trim();
-            fetchPolicyNews(1, 12, q);
+            searchNews(q);
         });
     }
 
@@ -60,22 +64,22 @@ async function loadStaticNewsJson() {
         const res = await fetch('data/korea_now.json?v=' + Date.now());
         
         if (!res.ok) {
-            console.error('❌ JSON 로드 실패:', res.status, res.statusText);
+            console.error('[ERROR] JSON 로드 실패:', res.status, res.statusText);
             throw new Error(`JSON not found: ${res.status}`);
         }
         const data = await res.json();
         
-        const items = (data && Array.isArray(data.items)) ? data.items : [];
-        console.log(`✅ ${items.length}개 뉴스 로드 완료`);
+        allNewsItems = (data && Array.isArray(data.items)) ? data.items : [];
+        console.log(`[INFO] ${allNewsItems.length}개 뉴스 로드 완료`);
         
-        if (items.length === 0) {
-            console.warn('⚠️ 뉴스 아이템이 없습니다');
+        if (allNewsItems.length === 0) {
+            console.warn('[WARN] 뉴스 아이템이 없습니다');
         }
         
-        renderNewsListFromJson(items, container);
-        renderSimpleCount(items.length);
+        currentPage = 1;
+        renderPage();
     } catch (e) {
-        console.error('❌ 뉴스 로드 에러:', e);
+        console.error('[ERROR] 뉴스 로드 에러:', e);
         if (container) {
             container.innerHTML = `
                 <div class="alert alert-warning">
@@ -85,6 +89,129 @@ async function loadStaticNewsJson() {
                 </div>
             `;
         }
+    }
+}
+
+function renderPage() {
+    const container = document.getElementById('newsContainer');
+    if (!container) return;
+    
+    // 현재 페이지에 표시할 아이템 계산
+    const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
+    const endIndex = startIndex + ITEMS_PER_PAGE;
+    const pageItems = allNewsItems.slice(startIndex, endIndex);
+    
+    if (pageItems.length === 0) {
+        container.innerHTML = `
+            <div class="alert alert-info">
+                <i class="fas fa-info-circle"></i> 표시할 뉴스가 없습니다.
+            </div>
+        `;
+        return;
+    }
+    
+    // 뉴스 카드 렌더링
+    renderNewsListFromJson(pageItems, container);
+    
+    // 페이지네이션 렌더링
+    renderPagination();
+}
+
+function renderPagination() {
+    const paginationContainer = document.getElementById('paginationContainer');
+    if (!paginationContainer) return;
+    
+    const totalPages = Math.ceil(allNewsItems.length / ITEMS_PER_PAGE);
+    const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
+    const endIndex = startIndex + ITEMS_PER_PAGE;
+    
+    if (totalPages <= 1) {
+        paginationContainer.innerHTML = '';
+        return;
+    }
+    
+    let html = '<nav aria-label="Page navigation"><ul class="pagination justify-content-center">';
+    
+    // 이전 버튼
+    html += `
+        <li class="page-item ${currentPage === 1 ? 'disabled' : ''}">
+            <a class="page-link" href="#" onclick="changePage(${currentPage - 1}); return false;">
+                <i class="fas fa-chevron-left"></i> 이전
+            </a>
+        </li>
+    `;
+    
+    // 페이지 번호 버튼 (최대 10개만 표시)
+    const maxButtons = 10;
+    let startPage = Math.max(1, currentPage - Math.floor(maxButtons / 2));
+    let endPage = Math.min(totalPages, startPage + maxButtons - 1);
+    
+    // 시작 페이지 조정
+    if (endPage - startPage < maxButtons - 1) {
+        startPage = Math.max(1, endPage - maxButtons + 1);
+    }
+    
+    for (let i = startPage; i <= endPage; i++) {
+        html += `
+            <li class="page-item ${i === currentPage ? 'active' : ''}">
+                <a class="page-link" href="#" onclick="changePage(${i}); return false;">${i}</a>
+            </li>
+        `;
+    }
+    
+    // 다음 버튼
+    html += `
+        <li class="page-item ${currentPage === totalPages ? 'disabled' : ''}">
+            <a class="page-link" href="#" onclick="changePage(${currentPage + 1}); return false;">
+                다음 <i class="fas fa-chevron-right"></i>
+            </a>
+        </li>
+    `;
+    
+    html += '</ul></nav>';
+    html += `<p class="text-center text-muted mt-2">전체 ${allNewsItems.length}개 중 ${startIndex + 1}-${Math.min(endIndex, allNewsItems.length)}개 표시</p>`;
+    
+    paginationContainer.innerHTML = html;
+}
+
+function changePage(page) {
+    const totalPages = Math.ceil(allNewsItems.length / ITEMS_PER_PAGE);
+    if (page < 1 || page > totalPages) return;
+    
+    currentPage = page;
+    renderPage();
+    
+    // 페이지 상단으로 스크롤
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function searchNews(query) {
+    if (!query) {
+        currentPage = 1;
+        renderPage();
+        return;
+    }
+    
+    // 검색 필터링
+    const filtered = allNewsItems.filter(item => 
+        item.title.includes(query) || 
+        (item.summary && item.summary.includes(query))
+    );
+    
+    // 임시로 필터링된 결과 표시
+    const container = document.getElementById('newsContainer');
+    if (filtered.length > 0) {
+        renderNewsListFromJson(filtered, container);
+        const paginationContainer = document.getElementById('paginationContainer');
+        if (paginationContainer) {
+            paginationContainer.innerHTML = `<p class="text-center text-muted">검색 결과: ${filtered.length}개</p>`;
+        }
+    } else {
+        container.innerHTML = `
+            <div class="alert alert-info">
+                <i class="fas fa-info-circle"></i> "${escapeHtml(query)}"에 대한 검색 결과가 없습니다.
+            </div>
+        `;
     }
 }
 
@@ -225,49 +352,6 @@ function renderNewsListFromJson(items, container) {
     container.innerHTML = html;
 }
 
-function renderSimpleCount(count) {
-    const pagination = document.getElementById('newsPagination');
-    if (!pagination) return;
-    pagination.innerHTML = `
-        <li class="page-item disabled"><span class="page-link">총 ${count}건</span></li>
-    `;
-}
-
-function renderPagination(pageNo, numOfRows, totalCount, query, paginationEl) {
-    if (!paginationEl) return;
-    const totalPages = Math.max(1, Math.ceil(totalCount / numOfRows));
-    const current = Math.min(pageNo, totalPages);
-
-    let html = '';
-    const makePage = (p, label, disabled = false, active = false) => {
-        return `
-            <li class="page-item ${disabled ? 'disabled' : ''} ${active ? 'active' : ''}">
-                <a class="page-link" href="#" data-page="${p}">${label}</a>
-            </li>
-        `;
-    };
-
-    html += makePage(1, '&laquo;', current === 1);
-    html += makePage(Math.max(1, current - 1), '&lsaquo;', current === 1);
-
-    const start = Math.max(1, current - 2);
-    const end = Math.min(totalPages, current + 2);
-    for (let p = start; p <= end; p++) {
-        html += makePage(p, String(p), false, p === current);
-    }
-
-    html += makePage(Math.min(totalPages, current + 1), '&rsaquo;', current === totalPages);
-    html += makePage(totalPages, '&raquo;', current === totalPages);
-
-    paginationEl.innerHTML = html;
-    paginationEl.querySelectorAll('a.page-link').forEach(a => {
-        a.addEventListener('click', (e) => {
-            e.preventDefault();
-            const p = parseInt(a.getAttribute('data-page'));
-            fetchPolicyNews(p, numOfRows, query);
-        });
-    });
-}
 
 function stripHtml(html) {
     if (!html) return '';
