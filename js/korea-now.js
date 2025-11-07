@@ -186,20 +186,20 @@ function renderNewsListFromJson(items, container) {
         // 원본 이미지 직접 사용 (프록시 제거로 고품질 유지)
         let imageUrlToUse = finalThumbnailUrl;
 
-        // 이미지 상단, 텍스트 하단 - 284x191 고정 크기
+        // 이미지 상단, 텍스트 하단 - 가로 100% 고정 높이 300px
         const imageHtml = imageUrlToUse 
-            ? `<div style="width: 284px; height: 191px; background: #f8f9fa; overflow: hidden; position: relative;">
+            ? `<div style="width: 100%; height: 300px; background: #f8f9fa; overflow: hidden; position: relative;">
                  <img 
                     src="${imageUrlToUse}" 
                     alt="${escapeHtml(title)}" 
                     loading="lazy" 
                     decoding="async"
-                    style="width: 284px; height: 191px; object-fit: cover; object-position: center; display: block;"
+                    style="width: 100%; height: 300px; object-fit: cover; object-position: center; display: block;"
                     referrerpolicy="no-referrer"
-                    onerror="this.style.display='none'; this.parentElement.innerHTML='<div class=\\'d-flex align-items-center justify-content-center\\' style=\\'width:284px;height:191px;background:#f8f9fa;\\'><i class=\\'fas fa-newspaper fa-4x text-muted\\'></i></div>';"
+                    onerror="this.style.display='none'; this.parentElement.innerHTML='<div class=\\'d-flex align-items-center justify-content-center\\' style=\\'width:100%;height:300px;background:#f8f9fa;\\'><i class=\\'fas fa-newspaper fa-4x text-muted\\'></i></div>';"
                     onload="this.style.opacity='1';">
                </div>`
-            : `<div style="width: 284px; height: 191px; background: #f8f9fa; display: flex; align-items: center; justify-content: center;">
+            : `<div style="width: 100%; height: 300px; background: #f8f9fa; display: flex; align-items: center; justify-content: center;">
                  <i class="fas fa-newspaper fa-4x text-muted"></i>
                </div>`;
 
