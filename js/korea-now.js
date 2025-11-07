@@ -283,7 +283,7 @@ function renderNewsListFromJson(items, container) {
     }
 
     let html = '';
-    items.forEach(row => {
+    items.forEach((row, index) => {
         const title = row.title || '';
         let link = row.link || '#';
         const summary = row.summary || '';
@@ -291,6 +291,10 @@ function renderNewsListFromJson(items, container) {
         const author = row.author || '대한민국 정책브리핑';
         const thumbnailUrl = row.thumbnail_url || '';
         const dateText = pubDate ? new Date(pubDate).toLocaleDateString('ko-KR') : '';
+        
+        // 자체 뉴스 상세 페이지로 연결 (인덱스 기반)
+        const actualIndex = allNewsItems.indexOf(row);
+        const detailLink = `news-detail.html?id=${actualIndex}`;
         
         // 썸네일 이미지 URL 결정: summary HTML에서 첫 이미지 우선 사용
         let finalThumbnailUrl = thumbnailUrl;
@@ -334,7 +338,7 @@ function renderNewsListFromJson(items, container) {
             <article class="post-card">
                 ${imageHtml}
                 <div class="post-card-body">
-                    <a href="${link}" target="_blank" rel="noopener" class="post-title">
+                    <a href="${detailLink}" class="post-title">
                         ${escapeHtml(title)}
                     </a>
                     <div class="post-meta">
@@ -342,8 +346,8 @@ function renderNewsListFromJson(items, container) {
                         ${dateText ? `<span class="mx-2">|</span><i class=\"fas fa-calendar\"></i> ${dateText}` : ''}
                     </div>
                     <p class="post-excerpt">${escapeHtml(trimSummary(stripHtml(summary)))}</p>
-                    <a href="${link}" target="_blank" rel="noopener" class="read-more">
-                        원문 보기 <i class="fas fa-arrow-right"></i>
+                    <a href="${detailLink}" class="read-more">
+                        자세히 보기 <i class="fas fa-arrow-right"></i>
                     </a>
                 </div>
             </article>

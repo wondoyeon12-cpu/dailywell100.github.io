@@ -85,12 +85,17 @@ def extract_first_image_url(html_content: str) -> str:
     return ""
 
 
-def fetch_first_image_from_detail_page(article_url: str) -> Optional[str]:
+def fetch_article_detail(article_url: str) -> Dict[str, Optional[str]]:
     """
-    기사 상세 페이지에서 첫 번째 이미지 URL 추출
+    기사 상세 페이지에서 첫 번째 이미지와 전체 내용 추출
     """
+    result = {
+        'image': None,
+        'full_content': None
+    }
+    
     if not article_url or not article_url.startswith('http'):
-        return None
+        return result
     
     try:
         headers = {
@@ -102,31 +107,44 @@ def fetch_first_image_from_detail_page(article_url: str) -> Optional[str]:
         
         resp = requests.get(article_url, headers=headers, timeout=10, allow_redirects=True)
         if resp.status_code != 200:
-            return None
+            return result
         
         soup = BeautifulSoup(resp.content, 'html.parser')
         
-        # 여러 이미지 선택자 시도
+        # 1. 전체 내용 추출
+        content_selectors = [
+            'div.contentArea',
+            'div.articleBody', 
+            'div.viewContent',
+            'div.newsView',
+            'article'
+        ]
+        
+        for selector in content_selectors:
+            content_div = soup.select_one(selector)
+            if content_div:
+                # HTML 정리
+                html_content = str(content_div)
+                result['full_content'] = html_content
+                break
+        
+        # 2. 첫 번째 이미지 추출
         img_selectors = [
-            'div.contentArea img',  # 콘텐츠 영역의 이미지
-            'div.articleBody img',  # 기사 본문 이미지
-            'div.viewContent img',  # 뷰 콘텐츠 이미지
-            'article img',  # article 태그 내 이미지
-            '.imageWrap img',  # 이미지 래퍼
-            '.cardnews img',  # 카드뉴스 이미지
-            'img[src*="newsWeb/resources/attaches"]',  # 뉴스 첨부 이미지
-            'img[src*="korea.kr"]',  # korea.kr 도메인 이미지
+            'div.contentArea img',
+            'div.articleBody img',
+            'div.viewContent img',
+            'article img',
+            '.imageWrap img',
+            '.cardnews img',
+            'img[src*="newsWeb/resources/attaches"]',
+            'img[src*="korea.kr"]',
         ]
         
         for selector in img_selectors:
             img_tags = soup.select(selector)
             for img in img_tags:
                 src = img.get('src') or img.get('data-src') or ''
-                if not src:
-                    continue
-                
-                # data: URL 제외
-                if src.startswith('data:'):
+                if not src or src.startswith('data:'):
                     continue
                 
                 # 상대 경로를 절대 경로로 변환
@@ -137,16 +155,19 @@ def fetch_first_image_from_detail_page(article_url: str) -> Optional[str]:
                 
                 # korea.kr 이미지만 사용
                 if 'korea.kr' in src or 'newsWeb/resources/attaches' in src:
-                    # HTTPS 강제
                     if src.startswith('http://'):
                         src = src.replace('http://', 'https://')
-                    return src
+                    result['image'] = src
+                    break
+            
+            if result['image']:
+                break
         
-        return None
+        return result
         
     except Exception as e:
-        print(f"⚠️ 상세 페이지 이미지 추출 실패 ({article_url}): {e}")
-        return None
+        print(f"[WARN] 상세 페이지 추출 실패 ({article_url}): {e}")
+        return result
 
 
 def fetch_policy_news_from_api() -> Dict:
@@ -213,31 +234,31 @@ def fetch_policy_news_from_api() -> Dict:
                     pub_date = get_text(item, ["ApproveDate", "ModifyDate"]) or ""
                     author = get_text(item, ["ApproverName"]) or "대한민국 정책브리핑"
                     
-                    # 이미지 URL 추출 우선순위 (고해상도 우선):
-                    # 1) 기사 상세 페이지에서 첫 번째 이미지 추출 (원본/큰 이미지 가능성 높음)
-                    # 2) summary HTML에서 첫 번째 이미지 추출 (썸네일일 수 있음)
-                    # 3) XML 필드에서 찾기
+                    # 이미지와 전체 내용 추출
                     thumbnail_url = None
+                    full_content = None
                     
-                    # 우선순위 1: 기사 상세 페이지에서 첫 이미지 (고해상도 가능)
+                    # 상세 페이지에서 이미지와 전체 내용 추출
                     if link:
-                        print(f"  🔍 상세 페이지에서 첫 번째 이미지 추출: {title[:30]}...")
-                        thumbnail_url = fetch_first_image_from_detail_page(link)
+                        print(f"  [INFO] 상세 페이지 크롤링: {title[:30]}...")
+                        detail = fetch_article_detail(link)
+                        thumbnail_url = detail.get('image')
+                        full_content = detail.get('full_content')
+                        
                         if thumbnail_url:
-                            print(f"    ✅ 상세 페이지에서 이미지 발견: {thumbnail_url[:60]}...")
-                        time.sleep(0.2)  # 서버 부하 방지
+                            print(f"    [OK] 이미지 발견: {thumbnail_url[:60]}...")
+                        if full_content:
+                            print(f"    [OK] 전체 내용 추출 완료 ({len(full_content)}자)")
+                        
+                        time.sleep(0.3)  # 서버 부하 방지
 
-                    # 우선순위 2: summary HTML에서 첫 이미지 (썸네일일 수 있음)
+                    # 이미지 백업: summary HTML에서 추출
                     if not thumbnail_url:
                         thumbnail_url = extract_first_image_url(summary)
                         if thumbnail_url:
-                            print(f"  ✅ summary에서 이미지 추출: {thumbnail_url[:60]}...")
+                            print(f"  [OK] summary에서 이미지 추출: {thumbnail_url[:60]}...")
                     
-                    # 우선순위 3: XML 필드에서 찾기
-                    if not thumbnail_url:
-                        thumbnail_url = get_text(item, ["ThumbnailUrl", "ImageUrl", "Image", "PhotoUrl"])
-                    
-                    # HTTPS 강제 (혼합 콘텐츠 방지)
+                    # HTTPS 강제
                     if thumbnail_url and thumbnail_url.startswith('http://'):
                         thumbnail_url = thumbnail_url.replace('http://', 'https://')
 
@@ -245,6 +266,7 @@ def fetch_policy_news_from_api() -> Dict:
                         "title": title,
                         "link": link,
                         "summary": summary,
+                        "full_content": full_content or summary,  # 전체 내용 없으면 summary 사용
                         "pub_date": pub_date,
                         "author": author,
                         "thumbnail_url": thumbnail_url or "",
@@ -283,7 +305,7 @@ def fetch_policy_news_from_api() -> Dict:
 
 
 def main():
-    out_path = os.path.join("data", "korea_now.json")
+    out_path = os.path.join("dailywell100_static", "data", "korea_now.json")
     os.makedirs(os.path.dirname(out_path), exist_ok=True)
 
     # 기존 데이터 로드 (있다면)
