@@ -31,8 +31,52 @@ async function loadData() {
         // 게시글 데이터 로드
         const postsResponse = await fetch('data/posts.json');
         const postsData = await postsResponse.json();
-        allPosts = postsData.posts || [];
-        console.log('📦 게시글 데이터 로드 완료:', allPosts.length, '개');
+        let posts = postsData.posts || [];
+        
+        // 대한민국은, 지금 데이터 로드
+        try {
+            const koreaNowResponse = await fetch('data/korea_now.json');
+            const koreaNowData = await koreaNowResponse.json();
+            const koreaNowPosts = (koreaNowData.items || []).map((item, index) => ({
+                id: `korea_now_${index}`,
+                title: item.title,
+                category: '대한민국은, 지금',
+                author: item.author || '정책브리핑',
+                created_at: item.pub_date,
+                excerpt: item.summary ? item.summary.replace(/<[^>]*>/g, '').substring(0, 200) : '',
+                featured_image: item.thumbnail_url,
+                content: item.summary || '',
+                link: item.link
+            }));
+            posts = posts.concat(koreaNowPosts);
+            console.log('📰 대한민국은, 지금:', koreaNowPosts.length, '개');
+        } catch (error) {
+            console.warn('⚠️ 대한민국은, 지금 데이터 로드 실패:', error);
+        }
+        
+        // 가보자고 데이터 로드
+        try {
+            const goNowResponse = await fetch('data/go_now.json');
+            const goNowData = await goNowResponse.json();
+            const goNowPosts = (goNowData.items || []).map((item, index) => ({
+                id: `go_now_${index}`,
+                title: item.title,
+                category: '가보자고',
+                author: '한국관광공사',
+                created_at: new Date().toISOString(),
+                excerpt: item.addr1 || '',
+                featured_image: item.firstimage || item.firstimage2,
+                content: item.addr1 || '',
+                link: item.detail_link
+            }));
+            posts = posts.concat(goNowPosts);
+            console.log('🗺️ 가보자고:', goNowPosts.length, '개');
+        } catch (error) {
+            console.warn('⚠️ 가보자고 데이터 로드 실패:', error);
+        }
+        
+        allPosts = posts;
+        console.log('📦 전체 게시글 데이터 로드 완료:', allPosts.length, '개');
         
         // 카테고리 데이터 로드
         const categoriesResponse = await fetch('data/categories.json?v=' + Date.now());
@@ -113,6 +157,10 @@ function createPostCard(post) {
     const excerpt = post.excerpt || post.content.substring(0, 200).replace(/<[^>]*>/g, '');
     const date = new Date(post.created_at).toLocaleDateString('ko-KR');
     
+    // 외부 링크가 있으면 외부 링크로, 없으면 내부 링크로
+    const postLink = post.link || `post.html?id=${post.id}`;
+    const linkTarget = post.link ? 'target="_blank" rel="noopener"' : '';
+    
     return `
         <article class="post-card">
             ${imageHtml}
@@ -121,7 +169,7 @@ function createPostCard(post) {
                     ${post.category}
                 </a>
                 
-                <a href="post.html?id=${post.id}" class="post-title">
+                <a href="${postLink}" ${linkTarget} class="post-title">
                     ${post.title}
                 </a>
                 
@@ -137,8 +185,8 @@ function createPostCard(post) {
                 
                 <p class="post-excerpt">${excerpt}...</p>
                 
-                <a href="post.html?id=${post.id}" class="read-more">
-                    자세히 보기 <i class="fas fa-arrow-right"></i>
+                <a href="${postLink}" ${linkTarget} class="read-more">
+                    원문 보기 <i class="fas fa-arrow-right"></i>
                 </a>
             </div>
         </article>
