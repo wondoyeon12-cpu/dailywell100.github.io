@@ -99,6 +99,12 @@ body {
     transition: all 0.3s ease;
     height: 100%;
     box-shadow: 0 3px 10px rgba(0,0,0,0.08);
+    display: flex;
+    flex-direction: column;
+}
+
+.service-card .btn {
+    margin-top: auto;
 }
 
 .service-card:hover {
