@@ -12,6 +12,7 @@ document.addEventListener('DOMContentLoaded', async function() {
     
     if (currentPage === 'index.html' || currentPage === '') {
         displayMainPage();
+        setupCategoryFilter(); // 카테고리 필터 이벤트 설정
     } else if (currentPage === 'health.html') {
         displayCategoryPage('건강상식');
     } else if (currentPage === 'korea-now.html') {
@@ -287,4 +288,56 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 });
+
+// 카테고리 필터 설정
+function setupCategoryFilter() {
+    const filterButtons = document.querySelectorAll('#categoryFilter button');
+    
+    filterButtons.forEach(button => {
+        button.addEventListener('click', function() {
+            // 모든 버튼에서 active 클래스 제거
+            filterButtons.forEach(btn => btn.classList.remove('active'));
+            
+            // 클릭된 버튼에 active 클래스 추가
+            this.classList.add('active');
+            
+            // 카테고리로 필터링
+            const category = this.getAttribute('data-category');
+            filterPostsByCategory(category);
+        });
+    });
+}
+
+// 카테고리별 게시글 필터링
+function filterPostsByCategory(category) {
+    const postsContainer = document.getElementById('postsContainer');
+    if (!postsContainer) return;
+    
+    let filteredPosts;
+    
+    if (category === 'all') {
+        // 전체: 최근 게시글 10개
+        filteredPosts = Array.isArray(allPosts) ? allPosts.slice(0, 10) : [];
+    } else {
+        // 특정 카테고리: 해당 카테고리의 최근 게시글 10개
+        filteredPosts = Array.isArray(allPosts) 
+            ? allPosts.filter(post => post.category === category).slice(0, 10) 
+            : [];
+    }
+    
+    let html = '';
+    if (filteredPosts.length > 0) {
+        filteredPosts.forEach(post => {
+            html += createPostCard(post);
+        });
+    } else {
+        html = `
+            <div class="alert alert-info">
+                <i class="fas fa-info-circle"></i> 게시글이 없습니다.
+            </div>
+        `;
+    }
+    
+    postsContainer.innerHTML = html;
+}
 
