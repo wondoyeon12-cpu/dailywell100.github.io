@@ -1,0 +1,9 @@
+{
+  "name": "dailywell100",
+  "version": "1.0.0",
+  "description": "DailyWell100 Static Site",
+  "dependencies": {
+    "openai": "^4.0.0"
+  }
+}
+
