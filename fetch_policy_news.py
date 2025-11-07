@@ -320,7 +320,7 @@ def fetch_policy_news_from_api() -> Dict:
 
 
 def main():
-    out_path = os.path.join("dailywell100_static", "data", "korea_now.json")
+    out_path = os.path.join("data", "korea_now.json")
     os.makedirs(os.path.dirname(out_path), exist_ok=True)
 
     # 기존 데이터 로드 (있다면)
@@ -363,10 +363,22 @@ def main():
         traceback.print_exc()
         sys.exit(1)
 
-    with open(out_path, "w", encoding="utf-8") as f:
-        json.dump(final, f, ensure_ascii=False, indent=2)
-    
-    print(f"[SUCCESS] 정책뉴스 저장 완료: {out_path} — {len(final['items'])}건")
+    try:
+        abs_path = os.path.abspath(out_path)
+        print(f"[INFO] 파일 저장 위치: {abs_path}")
+        
+        with open(out_path, "w", encoding="utf-8") as f:
+            json.dump(final, f, ensure_ascii=False, indent=2)
+        
+        # 파일 생성 확인
+        if os.path.exists(out_path):
+            print(f"[SUCCESS] 정책뉴스 저장 완료: {abs_path} — {len(final['items'])}건")
+        else:
+            print(f"[ERROR] 파일 저장 실패: 파일이 생성되지 않았습니다")
+    except Exception as e:
+        print(f"[ERROR] 파일 저장 중 오류: {e}")
+        import traceback
+        traceback.print_exc()
 
 
 if __name__ == "__main__":
