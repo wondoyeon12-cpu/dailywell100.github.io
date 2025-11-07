@@ -94,15 +94,8 @@ function displayMainPage() {
     const postsContainer = document.getElementById('postsContainer');
     if (!postsContainer) return;
     
-    // 최근 게시글 10개
-    const recentPosts = Array.isArray(allPosts) ? allPosts.slice(0, 10) : [];
-    
-    let html = '';
-    recentPosts.forEach(post => {
-        html += createPostCard(post);
-    });
-    
-    postsContainer.innerHTML = html;
+    // 초기 로드 시 "건강상식" 카테고리 표시
+    filterPostsByCategory('건강상식');
     
     // 카테고리 통계 업데이트
     updateCategorySidebar();
@@ -361,17 +354,10 @@ function filterPostsByCategory(category) {
     const postsContainer = document.getElementById('postsContainer');
     if (!postsContainer) return;
     
-    let filteredPosts;
-    
-    if (category === 'all') {
-        // 전체: 최근 게시글 10개
-        filteredPosts = Array.isArray(allPosts) ? allPosts.slice(0, 10) : [];
-    } else {
-        // 특정 카테고리: 해당 카테고리의 최근 게시글 10개
-        filteredPosts = Array.isArray(allPosts) 
-            ? allPosts.filter(post => post.category === category).slice(0, 10) 
-            : [];
-    }
+    // 특정 카테고리: 해당 카테고리의 최근 게시글 10개
+    const filteredPosts = Array.isArray(allPosts) 
+        ? allPosts.filter(post => post.category === category).slice(0, 10) 
+        : [];
     
     let html = '';
     if (filteredPosts.length > 0) {
