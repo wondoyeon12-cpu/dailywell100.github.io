@@ -225,10 +225,25 @@ def fetch_policy_news_from_api() -> Dict:
                     print(f"📄 페이지 {page_no}: 더 이상 뉴스가 없습니다.")
                     break
                 
+                # 필터링 키워드 (정책만화, 사실은 이렇습니다 등 제외)
+                exclude_keywords = [
+                    '정책만화',
+                    '사실은 이렇습니다',
+                    '[사실은 이렇습니다]',
+                    '정책칼럼',
+                    '이슈인사이트'
+                ]
+                
                 page_items = []
                 for item in news_items:
                     # 실제 태그명 사용
                     title = get_text(item, ["Title"]) or "제목 없음"
+                    
+                    # 제외 키워드 체크 (크롤링 전에 필터링)
+                    if any(keyword in title for keyword in exclude_keywords):
+                        print(f"  [FILTER] 제외: {title[:40]}...")
+                        continue
+                    
                     link = get_text(item, ["OriginalUrl"]) or ""
                     summary = get_text(item, ["DataContents"]) or ""
                     pub_date = get_text(item, ["ApproveDate", "ModifyDate"]) or ""
