@@ -1,0 +1,499 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <title>건강상식 → 티스토리 HTML 변환기</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <style>
+        body {
+            background: #f5f7fb;
+            font-family: 'Noto Sans KR', 'Apple SD Gothic Neo', sans-serif;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 40px auto;
+            padding: 0 20px;
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+        .header h1 {
+            font-size: 2.4rem;
+            font-weight: 700;
+            color: #2c3e50;
+            margin-bottom: 10px;
+        }
+        .header p {
+            color: #6c757d;
+            font-size: 1.05rem;
+        }
+        .input-section, .result-section {
+            background: #ffffff;
+            border-radius: 18px;
+            box-shadow: 0 15px 35px rgba(44, 62, 80, 0.08);
+            padding: 32px;
+            margin-bottom: 26px;
+        }
+        .post-card {
+            border: 1px solid #eaecee;
+            border-radius: 16px;
+            padding: 20px;
+            margin-bottom: 16px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            background: linear-gradient(180deg, rgba(255,255,255,0.95) 0%, #fdfdff 100%);
+        }
+        .post-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 12px 30px rgba(103, 166, 255, 0.18);
+        }
+        .post-card.selected {
+            border-color: #4e7dff;
+            box-shadow: 0 0 0 3px rgba(78, 125, 255, 0.2);
+        }
+        .badge-category {
+            display: inline-block;
+            padding: 4px 10px;
+            border-radius: 999px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            margin-right: 6px;
+            background: rgba(78, 125, 255, 0.1);
+            color: #3058c9;
+        }
+        .search-box {
+            position: relative;
+            margin-bottom: 20px;
+        }
+        .search-box input {
+            border-radius: 50px;
+            padding-left: 48px;
+            padding-right: 20px;
+            border: 1px solid #dce4ff;
+            box-shadow: inset 0 2px 6px rgba(48, 88, 201, 0.05);
+        }
+        .search-box i {
+            position: absolute;
+            left: 18px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #7a8bbd;
+            font-size: 1rem;
+        }
+        #htmlOutput {
+            width: 100%;
+            min-height: 400px;
+            border: 1px solid #e2e6ea;
+            border-radius: 14px;
+            padding: 20px;
+            background: #101522;
+            color: #f8f9fa;
+            font-family: 'JetBrains Mono', 'Consolas', 'Courier New', monospace;
+            font-size: 0.92rem;
+            line-height: 1.6;
+            white-space: pre-wrap;
+        }
+        #preview {
+            background: #ffffff;
+            border: 1px solid #e9edf3;
+            border-radius: 14px;
+            padding: 25px;
+            max-height: 420px;
+            overflow-y: auto;
+        }
+        .btn-copy {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            border-radius: 30px;
+            padding: 8px 18px;
+        }
+        .info-chip {
+            display: inline-flex;
+            align-items: center;
+            padding: 6px 12px;
+            border-radius: 999px;
+            margin-right: 8px;
+            background: rgba(25, 135, 84, 0.08);
+            color: #198754;
+            font-weight: 500;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1><i class="fas fa-heartbeat text-danger me-2"></i>건강상식 → 티스토리 HTML 변환기</h1>
+            <p>DailyWell100의 건강상식 글을 티스토리 HTML 형식으로 빠르게 변환하세요.</p>
+        </div>
+
+        <div class="input-section">
+            <h3 class="mb-3"><i class="fas fa-list me-2 text-primary"></i>건강상식 글 선택</h3>
+            <p class="text-muted">ID를 직접 입력하거나 목록에서 선택하세요.</p>
+
+            <div class="mb-4">
+                <div class="alert alert-success d-flex align-items-center">
+                    <i class="fas fa-bolt me-3"></i>
+                    <div>
+                        <strong>빠른 변환:</strong> 건강상식 글 ID를 입력하면 바로 티스토리 HTML로 변환됩니다. (예: 58)
+                    </div>
+                </div>
+                <div class="input-group">
+                    <input type="text" class="form-control form-control-lg" id="quickInput" placeholder="예: 58">
+                    <button class="btn btn-primary btn-lg" id="quickConvertBtn">
+                        <i class="fas fa-magic me-2"></i>바로 변환
+                    </button>
+                </div>
+            </div>
+
+            <div class="search-box">
+                <i class="fas fa-search"></i>
+                <input type="text" class="form-control form-control-lg" id="searchInput" placeholder="제목 또는 내용으로 검색...">
+            </div>
+
+            <div id="postList">
+                <div class="text-center py-5">
+                    <div class="spinner-border text-primary" role="status"></div>
+                    <p class="mt-3 text-muted">건강상식 데이터를 불러오는 중입니다...</p>
+                </div>
+            </div>
+
+            <button class="btn btn-outline-primary btn-lg w-100 mt-3" id="convertBtn" disabled>
+                <i class="fas fa-exchange-alt me-2"></i>선택한 글 변환
+            </button>
+        </div>
+
+        <div class="result-section" id="resultSection" style="display: none;">
+            <div class="row g-4">
+                <div class="col-lg-6 position-relative">
+                    <h4 class="mb-3"><i class="fas fa-code me-2 text-primary"></i>생성된 HTML 코드</h4>
+                    <p class="text-muted small">아래 코드를 티스토리 HTML 편집기에 그대로 붙여넣으면 됩니다.</p>
+                    <button class="btn btn-success btn-copy" id="copyBtn">
+                        <i class="fas fa-copy me-2"></i>복사하기
+                    </button>
+                    <pre id="htmlOutput"></pre>
+                </div>
+                <div class="col-lg-6">
+                    <h4 class="mb-3"><i class="fas fa-eye me-2 text-primary"></i>미리보기</h4>
+                    <p class="text-muted small">티스토리에서 보이는 형태로 확인하세요.</p>
+                    <div id="preview"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        let allPosts = [];
+        let filteredPosts = [];
+        let selectedPost = null;
+        let currentSort = 'latest';
+
+        $(document).ready(function() {
+            loadHealthPosts();
+
+            $('#quickConvertBtn').on('click', function() {
+                const id = $('#quickInput').val().trim();
+                if (!id) {
+                    showNotification('ID를 입력해주세요.', 'error');
+                    return;
+                }
+                handleQuickConvert(id);
+            });
+
+            $('#quickInput').on('keypress', function(e) {
+                if (e.which === 13) {
+                    $('#quickConvertBtn').click();
+                }
+            });
+
+            $('#convertBtn').on('click', function() {
+                if (!selectedPost) {
+                    showNotification('먼저 글을 선택해주세요.', 'error');
+                    return;
+                }
+                generateTistoryHtml(selectedPost);
+            });
+
+            $('#searchInput').on('input', function() {
+                filterPosts($(this).val());
+            });
+
+            $('#copyBtn').on('click', function() {
+                const text = $('#htmlOutput').text();
+                navigator.clipboard.writeText(text).then(() => {
+                    showNotification('복사 완료! 티스토리에 붙여넣으세요.', 'success');
+                }).catch(() => {
+                    showNotification('복사에 실패했습니다. 다시 시도해주세요.', 'error');
+                });
+            });
+        });
+
+        async function loadHealthPosts() {
+            const paths = [
+                'dailywell100_static/data/posts.json',
+                'data/posts.json',
+                '../dailywell100_static/data/posts.json',
+                'https://dailywell100.com/data/posts.json'
+            ];
+
+            for (const path of paths) {
+                try {
+                    const response = await fetch(path);
+                    if (!response.ok) continue;
+                    const data = await response.json();
+                    if (data && Array.isArray(data.posts)) {
+                        allPosts = data.posts.filter(post => post.category === '건강상식');
+                        filteredPosts = [...allPosts];
+                        displayPosts(filteredPosts);
+                        showNotification('건강상식 데이터 로드 완료!', 'success');
+                        return;
+                    }
+                } catch (error) {
+                    console.warn(`❌ ${path} 로딩 실패`, error);
+                }
+            }
+
+            $('#postList').html(`
+                <div class="alert alert-danger">
+                    <i class="fas fa-exclamation-triangle me-2"></i>
+                    건강상식 데이터를 불러오지 못했습니다. dailywell100_static/data/posts.json 파일을 확인해주세요.
+                </div>
+            `);
+        }
+
+        function displayPosts(posts) {
+            if (posts.length === 0) {
+                $('#postList').html(`
+                    <div class="alert alert-info">
+                        <i class="fas fa-info-circle me-2"></i>
+                        검색 조건에 맞는 건강상식 글이 없습니다.
+                    </div>
+                `);
+                return;
+            }
+
+            const html = posts.slice(0, 60).map(post => {
+                const date = formatDisplayDate(post.created_at || post.updated_at);
+                const image = post.featured_image || extractFirstImage(post.content) || 'https://via.placeholder.com/200x120?text=Health';
+                return `
+                    <div class="post-card" data-id="${post.id}">
+                        <div class="row g-3 align-items-center">
+                            <div class="col-md-3">
+                                <img src="${image}" alt="${post.title}" class="img-fluid rounded" onerror="this.src='https://via.placeholder.com/200x120?text=Health'">
+                            </div>
+                            <div class="col-md-9">
+                                <div class="d-flex align-items-center mb-2">
+                                    <span class="badge-category">건강상식</span>
+                                    <span class="info-chip"><i class="far fa-calendar-alt me-1"></i>${date}</span>
+                                </div>
+                                <h5 class="mb-2">${post.title}</h5>
+                                <p class="text-muted small mb-2">${truncateText(post.excerpt || stripHtml(post.content), 90)}</p>
+                                <div class="text-muted small">
+                                    <i class="fas fa-user-md me-1"></i>${post.author || 'DailyWell100'}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+
+            $('#postList').html(html);
+
+            $('.post-card').on('click', function() {
+                $('.post-card').removeClass('selected');
+                $(this).addClass('selected');
+
+                const postId = $(this).data('id');
+                selectedPost = allPosts.find(post => String(post.id) === String(postId));
+                $('#convertBtn').prop('disabled', !selectedPost);
+
+                if (selectedPost) {
+                    generateTistoryHtml(selectedPost);
+                }
+            });
+        }
+
+        function filterPosts(keyword) {
+            const term = keyword.toLowerCase();
+            filteredPosts = allPosts.filter(post =>
+                post.title.toLowerCase().includes(term) ||
+                (post.excerpt && post.excerpt.toLowerCase().includes(term)) ||
+                (stripHtml(post.content).toLowerCase().includes(term))
+            );
+            displayPosts(filteredPosts);
+        }
+
+        function handleQuickConvert(id) {
+            const post = allPosts.find(p => String(p.id) === String(id));
+            if (!post) {
+                showNotification(`ID ${id} 글을 찾을 수 없습니다.`, 'error');
+                return;
+            }
+
+            selectedPost = post;
+            $('.post-card').removeClass('selected');
+            $(`.post-card[data-id="${id}"]`).addClass('selected');
+            $('#convertBtn').prop('disabled', false);
+            generateTistoryHtml(post);
+        }
+
+        function generateTistoryHtml(post) {
+            const title = post.title || '건강상식';
+            const author = post.author || 'DailyWell100 건강연구소';
+            const createdAt = formatDisplayDate(post.created_at || post.updated_at);
+            const heroImage = post.featured_image || extractFirstImage(post.content);
+            const excerpt = post.excerpt || '';
+            const content = (post.content || '').trim();
+            const callout = '이 글은 DailyWell100 건강전문팀이 시니어 독자를 위해 작성한 콘텐츠입니다.';
+
+            const hashtags = [
+                '#건강상식',
+                '#시니어건강',
+                '#DailyWell100'
+            ];
+
+            const html = `
+<!-- 건강상식 티스토리 템플릿 -->
+<div style="background: linear-gradient(135deg, #4f74ff 0%, #7c4dff 100%); padding: 40px 20px; border-radius: 20px; text-align: center; margin-bottom: 36px; box-shadow: 0 20px 45px rgba(79, 116, 255, 0.25);">
+    <h1 style="color: #ffffff; font-size: 2.6rem; margin: 0; line-height: 1.3; text-shadow: 0 8px 18px rgba(0,0,0,0.18);">
+        ${title}
+    </h1>
+    <div style="color: rgba(255,255,255,0.85); margin-top: 18px; font-size: 1rem;">
+        <i class="fas fa-user-md"></i> ${author} · <i class="far fa-calendar-alt"></i> ${createdAt}
+    </div>
+    ${excerpt ? `<p style="color: rgba(255,255,255,0.9); margin-top: 18px; font-size: 1.05rem; line-height: 1.6;">${excerpt}</p>` : ''}
+</div>
+
+${heroImage ? `
+<div style="text-align: center; margin-bottom: 32px;">
+    <img src="${heroImage}" alt="${title}" style="max-width: 100%; border-radius: 18px; box-shadow: 0 18px 42px rgba(79, 116, 255, 0.25);">
+</div>
+` : ''}
+
+<div style="background: #ffffff; border: 1px solid #e4e9ff; border-radius: 18px; padding: 28px; margin-bottom: 30px;">
+    <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 18px;">
+        <span style="display: inline-flex; align-items: center; justify-content: center; width: 46px; height: 46px; border-radius: 14px; background: rgba(79, 116, 255, 0.12); color: #4f74ff; font-size: 1.4rem;">
+            <i class="fas fa-heartbeat"></i>
+        </span>
+        <div style="flex: 1;">
+            <strong style="color: #2b3a67; font-size: 1.15rem; display: block;">건강 전문가의 핵심 요약</strong>
+            <span style="color: #6c789d; font-size: 0.95rem;">${callout}</span>
+        </div>
+    </div>
+</div>
+
+<div style="background: #ffffff; border-radius: 20px; padding: 35px; box-shadow: 0 18px 44px rgba(27, 72, 171, 0.08); border: 1px solid rgba(79,116,255,0.12);">
+    <div style="color: #2d2f45; font-size: 1.05rem; line-height: 1.85;">
+        ${content}
+    </div>
+</div>
+
+<div style="background: #f8fbff; border-radius: 16px; padding: 24px; margin-top: 32px; border-left: 6px solid #4f74ff;">
+    <h3 style="color: #33406a; margin-bottom: 14px; font-size: 1.3rem;">
+        <i class="fas fa-notes-medical"></i> 건강 체크 포인트
+    </h3>
+    <ul style="margin: 0; padding-left: 18px; color: #4a5678; line-height: 1.9;">
+        <li>위 내용은 의료 전문가의 일반적인 권고사항으로, 개인의 건강 상태에 따라 달라질 수 있습니다.</li>
+        <li>특정 질환을 가지고 계시거나 약물을 복용 중이라면 의료진과 상담 후 실천하세요.</li>
+        <li>건강한 생활습관은 꾸준한 실천이 핵심입니다. 오늘부터 작은 변화를 시작해보세요.</li>
+    </ul>
+</div>
+
+<div style="text-align: center; margin-top: 40px;">
+    <p style="color: #4f74ff; font-weight: 600; font-size: 1.15rem; margin-bottom: 16px;">
+        <i class="fas fa-hands-helping me-2"></i>DailyWell100이 건강한 시니어 라이프를 응원합니다!
+    </p>
+    <p style="color: #7683aa; font-size: 0.98rem;">
+        더 많은 건강 정보를 받아보고 싶다면 블로그를 이웃 추가해주세요. 궁금한 점은 댓글로 남겨주세요 😊
+    </p>
+</div>
+
+<div style="text-align: center; margin-top: 30px;">
+    ${hashtags.map(tag => `
+        <span style="display: inline-block; background: linear-gradient(135deg, #4f74ff 0%, #7c4dff 100%); color: #ffffff; padding: 9px 18px; border-radius: 999px; margin: 4px; font-size: 0.92rem;">
+            ${tag}
+        </span>
+    `).join('')}
+</div>
+<!-- /건강상식 티스토리 템플릿 -->
+`;
+
+            $('#htmlOutput').text(html.trim());
+            $('#preview').html(html);
+            $('#resultSection').show();
+
+            $('html, body').animate({
+                scrollTop: $('#resultSection').offset().top - 20
+            }, 400);
+        }
+
+        function formatDisplayDate(dateString) {
+            if (!dateString) return '업데이트 예정';
+            const date = new Date(dateString);
+            if (Number.isNaN(date.getTime())) return dateString;
+            return `${date.getFullYear()}.${String(date.getMonth() + 1).padStart(2, '0')}.${String(date.getDate()).padStart(2, '0')}`;
+        }
+
+        function stripHtml(html) {
+            const temp = document.createElement('div');
+            temp.innerHTML = html || '';
+            return temp.textContent || temp.innerText || '';
+        }
+
+        function truncateText(text, length) {
+            if (!text) return '';
+            return text.length > length ? `${text.slice(0, length)}...` : text;
+        }
+
+        function extractFirstImage(html) {
+            if (!html) return null;
+            const div = document.createElement('div');
+            div.innerHTML = html;
+            const img = div.querySelector('img');
+            return img ? img.getAttribute('src') : null;
+        }
+
+        function showNotification(message, type = 'success') {
+            const icons = {
+                success: 'check-circle',
+                error: 'exclamation-circle',
+                info: 'info-circle'
+            };
+            const colors = {
+                success: '#198754',
+                error: '#dc3545',
+                info: '#0dcaf0'
+            };
+            const $alert = $(`
+                <div style="
+                    position: fixed;
+                    top: 20px;
+                    right: 20px;
+                    background: ${colors[type] || '#198754'};
+                    color: #ffffff;
+                    padding: 14px 24px;
+                    border-radius: 14px;
+                    box-shadow: 0 12px 30px rgba(0,0,0,0.18);
+                    z-index: 1050;
+                    display: flex;
+                    align-items: center;
+                    gap: 10px;
+                    font-weight: 500;
+                ">
+                    <i class="fas fa-${icons[type] || 'check-circle'}"></i>
+                    <span>${message}</span>
+                </div>
+            `);
+
+            $('body').append($alert);
+            setTimeout(() => $alert.fadeOut(250, () => $alert.remove()), 2800);
+        }
+    </script>
+</body>
+</html>
+
