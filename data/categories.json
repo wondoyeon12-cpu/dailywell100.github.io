@@ -5,7 +5,7 @@
     "slug": "health",
     "description": "건강과 관련된 유익한 정보를 제공합니다",
     "icon": "fa-heartbeat",
-    "count": 34
+    "count": 35
   },
   {
     "id": 2,
@@ -22,8 +22,7 @@
     "description": "AI가 손주처럼 대화하고 도와드립니다",
     "icon": "fa-robot",
     "count": 0
-  }
-  ,
+  },
   {
     "id": 4,
     "name": "대한민국은, 지금",
