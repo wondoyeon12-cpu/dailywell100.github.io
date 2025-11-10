@@ -3,7 +3,7 @@
  * Node.js 버전
  */
 
-const { OpenAI } = require('openai');
+const OpenAI = require('openai');
 
 exports.handler = async (event, context) => {
   // CORS 헤더 설정
